@@ -21,6 +21,28 @@ export async function POST(request: NextRequest) {
       hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     })
 
+    // CRITICAL SECURITY: Verify the request is authenticated
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header')
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Verify the JWT token and get the authenticated user
+    const token = authHeader.substring(7)
+    const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+
+    if (authError || !authUser) {
+      console.error('Invalid authentication token:', authError?.message)
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      )
+    }
+
     const { userId, email, fullName, organizationName } = await request.json()
     console.log('Request data:', { userId, email, fullName, organizationName })
 
@@ -29,6 +51,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      )
+    }
+
+    // CRITICAL SECURITY: Verify userId matches authenticated user
+    if (userId !== authUser.id) {
+      console.error('User ID mismatch:', { provided: userId, authenticated: authUser.id })
+      return NextResponse.json(
+        { error: 'User ID mismatch' },
+        { status: 403 }
       )
     }
 
@@ -44,7 +75,7 @@ export async function POST(request: NextRequest) {
     if (orgError) {
       console.error('Organization creation error:', orgError)
       return NextResponse.json(
-        { error: 'Failed to create organization', details: orgError.message },
+        { error: 'Failed to create organization' },
         { status: 500 }
       )
     }
@@ -72,7 +103,7 @@ export async function POST(request: NextRequest) {
         .eq('id', org.id)
 
       return NextResponse.json(
-        { error: 'Failed to create user profile', details: userError.message },
+        { error: 'Failed to create user profile' },
         { status: 500 }
       )
     }
@@ -85,7 +116,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Setup profile error:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

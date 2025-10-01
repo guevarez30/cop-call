@@ -1,7 +1,7 @@
 # Database Schema
 
 ## Overview
-The Service Call application uses Supabase (PostgreSQL) as its database. All migrations are stored in `/supabase/migrations/` and should be run in sequential order.
+This microSaaS application uses Supabase (PostgreSQL) as its database. All migrations are stored in `/supabase/migrations/` and should be run in sequential order.
 
 ## Schema Design
 
@@ -53,8 +53,8 @@ Application users linked to Supabase Auth and belonging to one organization.
 Defines user permission levels within an organization.
 
 **Values:**
-- `admin` - Full access to organization features, can manage templates and view all service calls
-- `user` - Standard access, can create/manage own service calls using organization templates
+- `admin` - Full access to organization features and resources
+- `user` - Standard access to application features
 
 ---
 
@@ -63,11 +63,9 @@ Defines user permission levels within an organization.
 ```
 organizations (1) ──< (many) users
        │
-       └──< (many) templates [future]
-       │
-       └──< (many) service_calls [future]
+       └──< (many) [your application data models]
 
-users (1) ──< (many) service_calls [future]
+users (1) ──< (many) [your application data models]
 ```
 
 ### Key Relationship Rules
@@ -76,7 +74,7 @@ users (1) ──< (many) service_calls [future]
 2. **Cascading Deletes**:
    - Deleting an organization removes all associated users
    - Deleting a Supabase auth user removes the corresponding user record
-3. **Organization Scope**: Templates and service calls will belong to organizations (to be implemented)
+3. **Organization Scope**: Add your application-specific data models that belong to organizations
 
 ---
 
@@ -122,17 +120,19 @@ supabase db push
 
 ## Future Schema Additions
 
-### Planned Tables
+### Application-Specific Tables
 
-1. **`templates`** (for service call templates)
-   - Owned by organization
-   - Editable by any admin in the organization
-   - Used by all users in the organization
+Add your application-specific tables here following the multi-tenant pattern:
 
-2. **`service_calls`** (actual service records)
-   - Created by users
-   - Uses templates from organization
-   - Viewable by user (own calls) or admin (all calls)
+1. **Organization-scoped resources**
+   - Tables that contain data shared across the organization
+   - Should have `organization_id` foreign key
+   - Admins can manage, users can use
+
+2. **User-scoped resources**
+   - Tables that contain user-specific data
+   - Should have `user_id` foreign key
+   - Users own their data, admins can view all
 
 3. **`teams`** (optional future feature)
    - Sub-groups within organizations

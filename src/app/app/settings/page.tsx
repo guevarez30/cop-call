@@ -3,9 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Lock, Globe, Moon, Smartphone } from "lucide-react";
+import { Bell, Lock, Globe, Moon, Sun, Smartphone } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -42,8 +46,8 @@ export default function SettingsPage() {
           <Separator />
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Service Call Alerts</p>
-              <p className="text-sm text-muted-foreground">Get notified of new assignments</p>
+              <p className="font-medium">Activity Alerts</p>
+              <p className="text-sm text-muted-foreground">Get notified of important events</p>
             </div>
             <Button variant="outline" size="sm">Configure</Button>
           </div>
@@ -102,13 +106,38 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Moon className="h-5 w-5 text-muted-foreground" />
+              {theme === "dark" ? (
+                <Moon className="h-5 w-5 text-muted-foreground" />
+              ) : (
+                <Sun className="h-5 w-5 text-muted-foreground" />
+              )}
               <div>
                 <p className="font-medium">Theme</p>
-                <p className="text-sm text-muted-foreground">Light mode</p>
+                <p className="text-sm text-muted-foreground">
+                  {theme === "dark" ? "Dark mode" : "Light mode"}
+                </p>
               </div>
             </div>
-            <Button variant="outline" size="sm">Change</Button>
+            <div className="flex gap-2">
+              <Button
+                variant={theme === "light" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTheme("light")}
+                className="w-24"
+              >
+                <Sun className="h-4 w-4 mr-1" />
+                Light
+              </Button>
+              <Button
+                variant={theme === "dark" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setTheme("dark")}
+                className="w-24"
+              >
+                <Moon className="h-4 w-4 mr-1" />
+                Dark
+              </Button>
+            </div>
           </div>
           <Separator />
           <div className="flex items-center justify-between">

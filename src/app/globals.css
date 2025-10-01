@@ -14,20 +14,20 @@
   --color-popover: oklch(1 0 0);
   --color-popover-foreground: oklch(0.145 0 0);
 
-  /* Dark Foresty Green Primary */
-  --color-primary: oklch(0.35 0.08 155);
+  /* Neutral Primary - Dark gray/charcoal */
+  --color-primary: oklch(0.2 0 0);
   --color-primary-foreground: oklch(0.985 0 0);
 
-  /* Lighter green for secondary/accents */
-  --color-secondary: oklch(0.95 0.02 155);
-  --color-secondary-foreground: oklch(0.35 0.08 155);
+  /* Light gray for secondary/accents */
+  --color-secondary: oklch(0.96 0 0);
+  --color-secondary-foreground: oklch(0.145 0 0);
 
   --color-muted: oklch(0.97 0 0);
   --color-muted-foreground: oklch(0.556 0 0);
 
-  /* Accent uses a complementary earth tone */
-  --color-accent: oklch(0.92 0.015 155);
-  --color-accent-foreground: oklch(0.35 0.08 155);
+  /* Accent uses subtle gray */
+  --color-accent: oklch(0.96 0 0);
+  --color-accent-foreground: oklch(0.145 0 0);
 
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.985 0 0);
@@ -55,39 +55,37 @@
   --color-gray-950: oklch(0.09 0 0);
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    /* Dark mode - Light background instead of dark */
-    --color-background: oklch(0.98 0 0);
-    --color-foreground: oklch(0.145 0 0);
+:root.dark {
+  /* Dark mode */
+  --color-background: oklch(0.145 0 0);
+  --color-foreground: oklch(0.985 0 0);
 
-    --color-card: oklch(1 0 0);
-    --color-card-foreground: oklch(0.145 0 0);
+  --color-card: oklch(0.18 0 0);
+  --color-card-foreground: oklch(0.985 0 0);
 
-    --color-popover: oklch(0.205 0 0);
-    --color-popover-foreground: oklch(0.985 0 0);
+  --color-popover: oklch(0.18 0 0);
+  --color-popover-foreground: oklch(0.985 0 0);
 
-    /* Lighter green for dark mode primary */
-    --color-primary: oklch(0.65 0.1 155);
-    --color-primary-foreground: oklch(0.145 0 0);
+  /* Light gray for dark mode primary */
+  --color-primary: oklch(0.85 0 0);
+  --color-primary-foreground: oklch(0.145 0 0);
 
-    /* Darker green backgrounds for dark mode */
-    --color-secondary: oklch(0.25 0.04 155);
-    --color-secondary-foreground: oklch(0.85 0.05 155);
+  /* Dark gray backgrounds for dark mode */
+  --color-secondary: oklch(0.22 0 0);
+  --color-secondary-foreground: oklch(0.985 0 0);
 
-    --color-muted: oklch(0.269 0 0);
-    --color-muted-foreground: oklch(0.708 0 0);
+  --color-muted: oklch(0.22 0 0);
+  --color-muted-foreground: oklch(0.708 0 0);
 
-    /* Dark mode accent */
-    --color-accent: oklch(0.28 0.04 155);
-    --color-accent-foreground: oklch(0.85 0.05 155);
+  /* Dark mode accent */
+  --color-accent: oklch(0.22 0 0);
+  --color-accent-foreground: oklch(0.985 0 0);
 
-    --color-destructive: oklch(0.704 0.191 22.216);
+  --color-destructive: oklch(0.704 0.191 22.216);
 
-    --color-border: oklch(1 0 0 / 10%);
-    --color-input: oklch(1 0 0 / 15%);
-    --color-ring: oklch(0.556 0 0);
-  }
+  --color-border: oklch(0.25 0 0);
+  --color-input: oklch(0.25 0 0);
+  --color-ring: oklch(0.556 0 0);
 }
 
 @layer base {

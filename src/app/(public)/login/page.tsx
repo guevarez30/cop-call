@@ -45,7 +45,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Welcome back</CardTitle>
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+              <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -93,9 +93,9 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
 
-            <p className="text-sm text-center text-neutral-600">
+            <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-neutral-900 hover:underline font-medium">
+              <Link href="/signup" className="text-foreground hover:underline font-medium">
                 Create account
               </Link>
             </p>

@@ -7,7 +7,7 @@ export default function Home() {
       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="font-bold text-xl text-foreground">Service Call</div>
+            <div className="font-bold text-xl text-foreground">MicroSaaS</div>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -31,11 +31,11 @@ export default function Home() {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-foreground">
-              Complete Every <span className="text-primary">Service Call</span> On Time
+              Build Your Next <span className="text-primary">SaaS Product</span> Faster
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 sm:mb-10">
-              Stay organized with managed checklists that ensure nothing gets missed.
-              Streamline your service operations and maintain consistency across your team.
+              A modern multi-tenant SaaS template with authentication, organizations, and role-based access built-in.
+              Start building your product features from day one.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <Link
@@ -57,33 +57,33 @@ export default function Home() {
         {/* Features Section */}
         <section className="bg-secondary/50 py-16 sm:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
               <div className="text-center">
-                <div className="mb-4 text-4xl text-primary">✓</div>
-                <h3 className="font-semibold text-lg mb-2 text-foreground">Never Miss a Step</h3>
+                <div className="mb-4 text-4xl">🔐</div>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">Auth Built-In</h3>
                 <p className="text-muted-foreground text-sm">
-                  Custom checklists ensure consistent, quality service every time
+                  Supabase authentication with protected routes ready to go
                 </p>
               </div>
               <div className="text-center">
-                <div className="mb-4 text-4xl">⏱️</div>
-                <h3 className="font-semibold text-lg mb-2 text-foreground">Stay On Schedule</h3>
+                <div className="mb-4 text-4xl">🏢</div>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">Multi-Tenant</h3>
                 <p className="text-muted-foreground text-sm">
-                  Track progress and completion in real-time to meet deadlines
+                  Organizations and users with role-based access control
                 </p>
               </div>
               <div className="text-center">
-                <div className="mb-4 text-4xl">👥</div>
-                <h3 className="font-semibold text-lg mb-2 text-foreground">Built for Teams</h3>
+                <div className="mb-4 text-4xl">⚡</div>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">Modern Stack</h3>
                 <p className="text-muted-foreground text-sm">
-                  Share templates and maintain standards across your organization
+                  Next.js 15, Tailwind CSS, and shadcn/ui components
                 </p>
               </div>
               <div className="text-center">
                 <div className="mb-4 text-4xl">📱</div>
-                <h3 className="font-semibold text-lg mb-2 text-foreground">Access Anywhere</h3>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">Mobile Ready</h3>
                 <p className="text-muted-foreground text-sm">
-                  Mobile-responsive interface perfect for field work
+                  Fully responsive design that works on any device
                 </p>
               </div>
             </div>
@@ -94,10 +94,10 @@ export default function Home() {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-              Ready to stay on time?
+              Ready to build?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join teams who never miss a service call deadline.
+              Start with a solid foundation and focus on what makes your product unique.
             </p>
             <Link
               href="/signup"
@@ -114,7 +114,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2025 Service Call. All rights reserved.
+              © 2025 MicroSaaS. All rights reserved.
             </div>
             <div className="flex gap-6">
               <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

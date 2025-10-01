@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,22 +18,20 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, Home, FileText, Settings, User, LogOut, FileSpreadsheet } from "lucide-react";
+import { Menu, Home, Settings, User, LogOut } from "lucide-react";
 import { RoleProvider, useRole } from "@/lib/role-context";
+import { createClient } from "@/lib/supabase/client";
 
 function NavigationItems() {
   const { isAdmin } = useRole();
 
   const baseItems = [
     { name: "Dashboard", href: "/app", icon: Home },
-    { name: "Service Calls", href: "/app/calls", icon: FileText },
     { name: "Settings", href: "/app/settings", icon: Settings },
   ];
 
   const adminItems = [
     { name: "Dashboard", href: "/app", icon: Home },
-    { name: "Service Calls", href: "/app/calls", icon: FileText },
-    { name: "Sheets", href: "/app/sheets", icon: FileSpreadsheet },
     { name: "Settings", href: "/app/settings", icon: Settings },
   ];
 
@@ -45,12 +44,12 @@ function RoleToggle() {
   if (!isDevelopment) return null;
 
   return (
-    <div className="flex items-center gap-2 bg-yellow-100 px-3 py-1 rounded-md border border-yellow-300">
-      <span className="text-xs font-medium text-yellow-800">Dev:</span>
+    <div className="flex items-center gap-2 bg-accent px-3 py-1 rounded-md border border-border">
+      <span className="text-xs font-medium text-muted-foreground">Dev:</span>
       <select
         value={role}
         onChange={(e) => setRole(e.target.value as "admin" | "user")}
-        className="text-xs font-medium bg-transparent border-none focus:outline-none cursor-pointer text-yellow-900 hover:text-yellow-950 transition-colors"
+        className="text-xs font-medium bg-transparent border-none focus:outline-none cursor-pointer text-foreground hover:text-primary transition-colors"
       >
         <option value="admin">Admin</option>
         <option value="user">User</option>
@@ -61,13 +60,28 @@ function RoleToggle() {
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigationItems = NavigationItems();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Error logging out:', error);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Left Side: Menu and Logo */}
             <div className="flex items-center gap-3">
@@ -99,7 +113,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
               </Sheet>
 
               <Link href="/app" className="text-xl font-bold hover:text-primary transition-colors">
-                Service Call
+                MicroSaaS
               </Link>
             </div>
 
@@ -139,9 +153,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer text-destructive">
+                  <DropdownMenuItem
+                    className="cursor-pointer text-destructive"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                    {isLoggingOut ? "Logging out..." : "Log out"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -151,7 +169,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
     </div>

@@ -1,7 +1,7 @@
-# Service Call - Project Documentation
+# MicroSaaS Template - Project Documentation
 
 ## Project Overview
-Service Call is a mobile-responsive web application built with modern web technologies, focusing on incremental development and clean architecture.
+A mobile-responsive multi-tenant SaaS application template built with modern web technologies, focusing on incremental development and clean architecture.
 
 ## Development Philosophy
 - **Incremental Development**: No home run, single-shot code development
@@ -42,9 +42,6 @@ Service Call is a mobile-responsive web application built with modern web techno
 │   │   │   └── app/           # Main application ("/app")
 │   │   │       ├── page.tsx
 │   │   │       ├── components/ # Components specific to /app dashboard
-│   │   │       ├── sheets/
-│   │   │       │   ├── page.tsx
-│   │   │       │   └── components/ # Components specific to sheets page
 │   │   │       └── ...        # Additional app pages with nested components
 │   │   ├── api/               # API routes (mostly protected)
 │   │   │   └── ...
@@ -63,43 +60,41 @@ Service Call is a mobile-responsive web application built with modern web techno
 
 ## Organization Hierarchy
 
-The application uses a hierarchical data model:
+The application uses a hierarchical multi-tenant data model:
 
-**Organization → Teams → Users → Service Calls**
+**Organization → Teams → Users → [Your Data Models]**
 
-- **Organization**: Top-level entity that owns all data (templates, teams, users, service calls)
+- **Organization**: Top-level entity that owns all application data
 - **Teams**: Groups within an organization (optional, may be implemented later)
 - **Users**: Belong to an organization, have roles (Admin or User)
-- **Service Calls**: Created by users, use templates from the organization
-- **Templates**: Belong to the organization, can be used by all users in that org
+- **[Your Data Models]**: Add your application-specific entities here
 
-### Key Ownership Rules
-1. **Templates are organization-scoped**: Any admin in the organization can create, edit, or delete any template
-2. **Service calls are user-scoped**: Users own their service calls but admins can view all
-3. **No personal templates**: Templates are shared resources across the organization
-4. **Cross-admin collaboration**: All admins have equal access to manage templates
+### Multi-Tenant Data Ownership Pattern
+- **Organization-scoped resources**: Shared across all users in the organization (e.g., settings, configurations)
+- **User-scoped resources**: Owned by individual users, but viewable by admins
+- **Cross-admin collaboration**: All admins have equal access to organization-level resources
 
 ## User Personas
 
 ### Admin
-- **Dashboard**: Overview of team performance and metrics
+- **Dashboard**: Overview of organization-wide data and metrics
 - **Access**: Full application access including admin-only pages
 - **Permissions**:
-  - View team performance data
-  - Access `/app/sheets` page to manage templates
-  - Create, edit, and delete ANY template in the organization
+  - View organization-wide analytics and data
+  - Manage organization-level resources
   - Manage team members
-  - View all service calls across the organization
+  - View all user data across the organization
+  - Access admin-only pages
 
 ### User
-- **Dashboard**: Personal service calls view
+- **Dashboard**: Personal data and activities view
 - **Access**: Standard application features
 - **Permissions**:
-  - View own service calls
-  - Create and manage own calls using organization templates
-  - No access to `/app/sheets` (template management)
-  - No access to team-wide analytics
-  - Cannot create or edit templates
+  - View and manage own data
+  - Use organization-level resources
+  - No access to admin-only pages
+  - No access to organization-wide analytics
+  - Cannot manage organization settings or other users
 
 ### Development Mode
 - **Persona Toggle**: Header includes a toggle to switch between Admin and User views
@@ -112,10 +107,9 @@ The application uses a hierarchical data model:
 
 ### Protected Routes (Auth Required)
 - `/app` - Main application dashboard (different for Admin vs User)
-  - **Admin**: Team performance overview
-  - **User**: Personal service calls dashboard
-- `/app/sheets` - Admin-only page
-- `/app/*` - All application pages and features
+  - **Admin**: Organization-wide overview and analytics
+  - **User**: Personal dashboard
+- `/app/*` - All application pages and features (add your routes here)
 - `/api/*` - Most API endpoints (except auth-related)
 
 ## Authentication Strategy
@@ -144,9 +138,11 @@ See `.claude/database-schema.md` for detailed schema documentation.
 - Naming: `YYYYMMDDHHMMSS_description.sql`
 - Run with: `supabase db push` or via Supabase Dashboard
 
-**Existing Migrations:**
+**Template Migrations:**
 1. `20250930000001_create_organizations.sql` - Organizations table
 2. `20250930000002_create_users.sql` - Users table and user_role enum
+
+*Add your application-specific migrations after these base migrations*
 
 ### Connection
 - **Provider**: Supabase
@@ -156,10 +152,10 @@ See `.claude/database-schema.md` for detailed schema documentation.
 ## Development Workflow
 
 ### Phase 1: Foundation
-- [x] Set up Tailwind CSS
-- [x] Create database migrations (organizations, users)
+- [ ] Set up Tailwind CSS
 - [ ] Install and configure shadcn/ui
 - [ ] Set up Supabase project and environment variables
+- [ ] Create database migrations (organizations, users)
 - [ ] Create Supabase client utilities
 - [ ] Implement authentication middleware
 
@@ -170,8 +166,8 @@ See `.claude/database-schema.md` for detailed schema documentation.
 - [ ] Set up route protection
 
 ### Phase 3: Application Features
-- [ ] Build main dashboard (`/app`)
-- [ ] Develop core features incrementally
+- [ ] Build main dashboard (`/app`) with role-based views
+- [ ] Develop your application-specific features incrementally
 - [ ] Create necessary API routes
 - [ ] Connect to Supabase database
 
