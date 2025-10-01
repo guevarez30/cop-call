@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-family-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: "Geist Mono", ui-monospace, monospace;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Light mode - Clean white background */
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.145 0 0);
+
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.145 0 0);
+
+  /* Dark Foresty Green Primary */
+  --color-primary: oklch(0.35 0.08 155);
+  --color-primary-foreground: oklch(0.985 0 0);
+
+  /* Lighter green for secondary/accents */
+  --color-secondary: oklch(0.95 0.02 155);
+  --color-secondary-foreground: oklch(0.35 0.08 155);
+
+  --color-muted: oklch(0.97 0 0);
+  --color-muted-foreground: oklch(0.556 0 0);
+
+  /* Accent uses a complementary earth tone */
+  --color-accent: oklch(0.92 0.015 155);
+  --color-accent-foreground: oklch(0.35 0.08 155);
+
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.985 0 0);
+
+  --color-border: oklch(0.922 0 0);
+  --color-input: oklch(0.922 0 0);
+  --color-ring: oklch(0.708 0 0);
+
+  --radius-sm: calc(0.625rem - 4px);
+  --radius-md: calc(0.625rem - 2px);
+  --radius-lg: 0.625rem;
+  --radius-xl: calc(0.625rem + 4px);
+
+  /* Gray scale for utility classes */
+  --color-gray-50: oklch(0.99 0 0);
+  --color-gray-100: oklch(0.97 0 0);
+  --color-gray-200: oklch(0.92 0 0);
+  --color-gray-300: oklch(0.85 0 0);
+  --color-gray-400: oklch(0.71 0 0);
+  --color-gray-500: oklch(0.56 0 0);
+  --color-gray-600: oklch(0.42 0 0);
+  --color-gray-700: oklch(0.32 0 0);
+  --color-gray-800: oklch(0.21 0 0);
+  --color-gray-900: oklch(0.145 0 0);
+  --color-gray-950: oklch(0.09 0 0);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @theme {
+    /* Dark mode - Light background instead of dark */
+    --color-background: oklch(0.98 0 0);
+    --color-foreground: oklch(0.145 0 0);
+
+    --color-card: oklch(1 0 0);
+    --color-card-foreground: oklch(0.145 0 0);
+
+    --color-popover: oklch(0.205 0 0);
+    --color-popover-foreground: oklch(0.985 0 0);
+
+    /* Lighter green for dark mode primary */
+    --color-primary: oklch(0.65 0.1 155);
+    --color-primary-foreground: oklch(0.145 0 0);
+
+    /* Darker green backgrounds for dark mode */
+    --color-secondary: oklch(0.25 0.04 155);
+    --color-secondary-foreground: oklch(0.85 0.05 155);
+
+    --color-muted: oklch(0.269 0 0);
+    --color-muted-foreground: oklch(0.708 0 0);
+
+    /* Dark mode accent */
+    --color-accent: oklch(0.28 0.04 155);
+    --color-accent-foreground: oklch(0.85 0.05 155);
+
+    --color-destructive: oklch(0.704 0.191 22.216);
+
+    --color-border: oklch(1 0 0 / 10%);
+    --color-input: oklch(1 0 0 / 15%);
+    --color-ring: oklch(0.556 0 0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 }
