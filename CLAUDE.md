@@ -32,7 +32,6 @@ A mobile-responsive multi-tenant SaaS application template built with modern web
 ```
 /
 ├── .claude/
-│   └── database-schema.md     # Detailed database schema documentation
 ├── src/
 │   ├── app/
 │   │   ├── (public)/          # Public routes
@@ -119,10 +118,43 @@ The application uses a hierarchical multi-tenant data model:
   - All `/app/*` routes
   - Most `/api/*` routes (except public auth endpoints)
 
+### Signup & Onboarding Flow
+
+**Development Setup Note:**
+For development, disable email confirmation in Supabase Dashboard:
+- Go to **Authentication** → **Providers** → **Email**
+- Disable "**Confirm email**" to allow instant signup without email verification
+- Re-enable for production
+
+**Flow:**
+1. **Signup (`/signup`)**:
+   - User provides: email and password only
+   - Creates Supabase Auth user
+   - **With email confirmation**: Email verification link sent, user must verify before login
+   - **Without email confirmation**: User can login immediately
+   - User sees success message
+
+2. **Login (`/login`)**:
+   - User signs in with email and password
+   - Checks if user profile exists in database
+   - **If profile exists**: Redirects to `/app` dashboard
+   - **If no profile**: Redirects to `/onboarding` for first-time setup
+
+3. **Onboarding (`/onboarding`)**:
+   - First-time user experience
+   - User provides: full name and organization name
+   - Calls `/api/auth/setup-profile` to create organization and user profile
+   - Redirects to `/app` dashboard after completion
+
+4. **Profile Setup API (`/api/auth/setup-profile`)**:
+   - Protected endpoint that requires valid session token
+   - Uses Supabase service role to create organization and user records
+   - First user of organization is automatically assigned `admin` role
+   - Returns success, allowing redirect to application
+
 ## Database
 
 ### Schema
-See `.claude/database-schema.md` for detailed schema documentation.
 
 **Core Tables:**
 - `organizations` - Top-level entity owning all data
@@ -139,8 +171,19 @@ See `.claude/database-schema.md` for detailed schema documentation.
 - Run with: `supabase db push` or via Supabase Dashboard
 
 **Template Migrations:**
-1. `20250930000001_create_organizations.sql` - Organizations table
-2. `20250930000002_create_users.sql` - Users table and user_role enum
+1. `20250930000001_create_organizations.sql` - Organizations table with RLS enabled
+2. `20250930000002_create_users.sql` - Users table, user_role enum, with RLS enabled
+3. `20251002000001_add_rls_policies.sql` - Comprehensive RLS policies for users and organizations
+4. `20251002000002_allow_initial_profile_creation.sql` - (Deprecated) Initial permissive INSERT policies
+5. `20251002000003_remove_open_insert_policies.sql` - Removes permissive INSERT policies for security
+
+**Important RLS Notes:**
+- Tables have RLS enabled by default for security
+- **NO direct INSERT policies** - All user/org creation goes through `/api/auth/setup-profile` using service role
+- Service role bypasses RLS for admin operations (used in setup-profile endpoint)
+- Admins can view/update all users in their organization
+- Users can only view/update their own profile (except role and organization_id)
+- This ensures all profile creation is validated and controlled server-side
 
 *Add your application-specific migrations after these base migrations*
 

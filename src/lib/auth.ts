@@ -24,6 +24,7 @@ export async function requireAuth() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  console.log(user)
 
   if (!user) {
     redirect('/login')
@@ -34,12 +35,21 @@ export async function requireAuth() {
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (error || !profile) {
-    console.error('Failed to fetch user profile:', error)
-    // User is authenticated but has no profile - might be a setup issue
+  console.log('Auth check - User ID:', user.id)
+  console.log('Auth check - Profile:', profile)
+  console.log('Auth check - Error:', error)
+
+  if (error) {
+    console.error('Error fetching user profile:', error)
     redirect('/login')
+  }
+
+  if (!profile) {
+    // User is authenticated but has no profile - redirect to onboarding
+    console.log('No profile found, redirecting to onboarding')
+    redirect('/app/onboarding')
   }
 
   return {
@@ -87,7 +97,7 @@ export async function checkIsAdmin(): Promise<boolean> {
       .from('users')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
     return profile?.role === 'admin'
   } catch {

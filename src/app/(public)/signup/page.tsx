@@ -16,9 +16,7 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    fullName: '',
-    organizationName: ''
+    password: ''
   })
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -30,40 +28,22 @@ export default function SignUpPage() {
     try {
       const supabase = createClient()
 
-      // Step 1: Create auth user
+      // Create auth user - profile will be created on first login
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/login`,
-          data: {
-            full_name: formData.fullName,
-          }
+          emailRedirectTo: `${window.location.origin}/login`
         }
       })
+
+      console.log('Signup response:', { authData, authError })
 
       if (authError) throw authError
       if (!authData.user) throw new Error('Failed to create user')
 
-      // Step 2: Create organization and user profile
-      const response = await fetch('/api/auth/setup-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: authData.user.id,
-          email: formData.email,
-          fullName: formData.fullName,
-          organizationName: formData.organizationName
-        })
-      })
+      console.log('Auth user created:', authData.user.id, 'Email confirmed:', authData.user.email_confirmed_at)
 
-      if (!response.ok) {
-        const data = await response.json()
-        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error
-        throw new Error(errorMsg || 'Failed to setup profile')
-      }
-
-      // Step 3: Show success message instead of redirecting
       setSuccess(true)
     } catch (err: any) {
       setError(err.message)
@@ -106,7 +86,7 @@ export default function SignUpPage() {
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
           <CardDescription>
-            Get started by creating your organization
+            Sign up to get started
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>
@@ -116,32 +96,6 @@ export default function SignUpPage() {
                 {error}
               </div>
             )}
-
-            <div className="space-y-2">
-              <Label htmlFor="organizationName">Organization Name</Label>
-              <Input
-                id="organizationName"
-                type="text"
-                placeholder="Acme Inc."
-                required
-                value={formData.organizationName}
-                onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                required
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                disabled={loading}
-              />
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

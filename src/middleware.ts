@@ -29,12 +29,10 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session and get user - properly handles expired sessions and refresh tokens
+  // Get authenticated user - verifies JWT with Supabase Auth server
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  const user = session?.user
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Protected routes - require authentication
   if (request.nextUrl.pathname.startsWith('/app')) {

@@ -8,13 +8,13 @@ A mobile-responsive multi-tenant SaaS application template built with Next.js 15
 - [x] User Registration (Sign up with email/password)
 - [x] User Login (Sign in with email/password)
 - [x] User Profile (View profile information)
+- [x] Theme Controls (Light/Dark mode toggle)
 
 ### 🚧 In Progress / Planned
 - [ ] User Profile Settings (Edit profile information)
 - [ ] Invite Users (Admin permission required)
 - [ ] Deactivate Users (Admin permission required)
 - [ ] Password Reset (Forgot password flow)
-- [ ] Theme Controls (Light/Dark mode toggle)
 
 ## Tech Stack
 
@@ -38,7 +38,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <your-repo-url>
-cd service-call
+cd boiler-plate
 ```
 
 ### 2. Install Dependencies
@@ -169,19 +169,6 @@ The application supports two user roles:
 - Can view and manage own data
 - Cannot access admin-only features
 
-## Database Schema
-
-### Organizations
-- Multi-tenant structure where each organization owns its data
-- First user to sign up creates an organization and becomes admin
-
-### Users
-- Linked to Supabase Auth
-- Belongs to one organization
-- Has a role (admin or user)
-
-See `.claude/database-schema.md` for detailed schema documentation.
-
 ## Security
 
 ### Row Level Security (RLS)
@@ -215,49 +202,19 @@ npm test
 - ESLint for code quality
 - Mobile-first responsive design
 
-## Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Import your repository
-4. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-5. Deploy!
 
 ### Environment Variables for Production
 Make sure to set the same environment variables in your production environment.
 
-## Troubleshooting
-
-### "Not authenticated" error
-- Ensure you're logged in
-- Check that your Supabase credentials are correct in `.env.local`
-- Verify RLS policies are applied in Supabase
-
-### "Failed to fetch profile" error
-- Ensure all database migrations have been run
-- Check Supabase logs in the dashboard
-- Verify your user exists in the `users` table
-
-### Development server won't start
-- Delete `node_modules/` and `.next/`
-- Run `npm install` again
-- Check for port conflicts (default is 3000)
 
 ## Contributing
-
 This is a template project. Feel free to:
 - Fork and customize for your needs
 - Submit issues for bugs
 - Suggest new features
 
 ## License
-
-MIT License - feel free to use this template for your projects.
+Coming soon
 
 ## Support
 
@@ -266,15 +223,5 @@ For questions or issues:
 2. Review `CLAUDE.md` for detailed documentation
 3. Check Supabase documentation
 4. Open an issue in the repository
-
-## Next Steps
-
-After setup, you'll want to:
-1. [ ] Complete user profile settings page
-2. [ ] Implement invite users functionality
-3. [ ] Add user deactivation for admins
-4. [ ] Set up password reset flow
-5. [ ] Implement theme switching
-6. [ ] Add your application-specific features
 
 Happy building! 🚀

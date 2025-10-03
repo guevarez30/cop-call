@@ -1,78 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Calendar, Building2, Shield, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-
-interface UserProfile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: 'admin' | 'user';
-  created_at: string;
-  organization_id: string;
-  organizations: {
-    id: string;
-    name: string;
-  };
-}
+import { useUserProfile } from "@/lib/user-profile-context";
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const supabase = createClient();
-
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        setError('Not authenticated');
-        return;
-      }
-
-      console.log('Fetching profile for user:', session.user.id);
-
-      // Create a client that uses service role to bypass RLS temporarily
-      // We'll fetch directly from the database
-      const response = await fetch('/api/profile', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-
-      console.log('Profile API response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Profile API error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch profile');
-      }
-
-      const data = await response.json();
-      console.log('Profile data received:', data);
-      setProfile(data.profile);
-    } catch (err: any) {
-      console.error('Error fetching profile:', err);
-      setError(err.message || 'Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { profile, loading, error, refreshProfile } = useUserProfile();
 
   // Get user initials for avatar
   const getInitials = (name: string | null) => {
@@ -112,7 +48,7 @@ export default function ProfilePage() {
               <p className="text-lg text-muted-foreground">
                 {error || 'Profile not found'}
               </p>
-              <Button onClick={fetchProfile} className="mt-4">
+              <Button onClick={refreshProfile} className="mt-4">
                 Try Again
               </Button>
             </div>

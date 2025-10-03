@@ -3,8 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('=== Profile API Called ===')
-
     // Get the auth token from the request headers
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
@@ -18,22 +16,20 @@ export async function GET(request: NextRequest) {
     // Extract the token
     const token = authHeader.substring(7)
 
-    // Create Supabase client with user's session token
-    // This client will respect RLS policies
-    const supabase = createClient(
+    // Use service role to bypass RLS for verification and fetching
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
         }
       }
     )
 
     // Verify the JWT token and get the authenticated user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
     if (authError || !authUser) {
       console.error('Invalid authentication token:', authError?.message)
@@ -43,11 +39,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('Authenticated user ID:', authUser.id)
-
-    // Fetch user profile from database
-    // RLS policies will ensure the user can only read their own profile
-    const { data: userProfile, error: profileError } = await supabase
+    // Fetch user profile from database using service role (bypasses RLS)
+    const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('users')
       .select(`
         id,
@@ -67,7 +60,12 @@ export async function GET(request: NextRequest) {
     if (profileError) {
       console.error('Profile fetch error:', profileError)
       return NextResponse.json(
-        { error: 'Failed to fetch profile' },
+        {
+          error: 'Failed to fetch profile',
+          details: profileError.message,
+          hint: profileError.hint,
+          code: profileError.code
+        },
         { status: 500 }
       )
     }

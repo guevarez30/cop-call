@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useUserProfile } from "@/lib/user-profile-context";
 
 export type UserRole = "admin" | "user";
 
@@ -15,7 +16,18 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const isDevelopment = process.env.NODE_ENV === "development";
-  const [role, setRole] = useState<UserRole>("user");
+  const { profile, loading } = useUserProfile();
+
+  // Use real user role from profile, default to "user"
+  const realUserRole: UserRole = profile?.role || "user";
+  const [role, setRole] = useState<UserRole>(realUserRole);
+
+  // Update role when profile loads or changes
+  useEffect(() => {
+    if (!loading && profile) {
+      setRole(profile.role);
+    }
+  }, [profile, loading]);
 
   return (
     <RoleContext.Provider

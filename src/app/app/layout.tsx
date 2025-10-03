@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, Home, Settings, User, LogOut } from "lucide-react";
 import { RoleProvider, useRole } from "@/lib/role-context";
+import { UserProfileProvider, useUserProfile } from "@/lib/user-profile-context";
 import { createClient } from "@/lib/supabase/client";
 
 function NavigationItems() {
@@ -63,6 +64,18 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigationItems = NavigationItems();
   const router = useRouter();
+  const { profile, loading: profileLoading } = useUserProfile();
+
+  // Get user initials for avatar
+  const getInitials = (name: string | null) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const handleLogout = async () => {
     try {
@@ -127,16 +140,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="/avatar-placeholder.png" alt="User" />
-                      <AvatarFallback>TG</AvatarFallback>
+                      <AvatarImage src="/avatar-placeholder.png" alt={profile?.full_name || 'User'} />
+                      <AvatarFallback>
+                        {profileLoading ? '...' : getInitials(profile?.full_name || null)}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">Taylor Guevarez</p>
-                      <p className="text-xs text-muted-foreground">taylor@example.com</p>
+                      <p className="text-sm font-medium">
+                        {profileLoading ? 'Loading...' : profile?.full_name || 'No name'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {profileLoading ? '' : profile?.email || 'No email'}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -182,8 +201,10 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
-    </RoleProvider>
+    <UserProfileProvider>
+      <RoleProvider>
+        <AppLayoutContent>{children}</AppLayoutContent>
+      </RoleProvider>
+    </UserProfileProvider>
   );
 }

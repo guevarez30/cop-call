@@ -32,10 +32,28 @@ export default function LoginPage() {
       })
 
       if (signInError) throw signInError
-      if (!data.user) throw new Error('Failed to sign in')
+      if (!data.user || !data.session) throw new Error('Failed to sign in')
 
-      // Redirect to app
-      router.push('/app')
+      // Check if user has a profile using authenticated API endpoint
+      const response = await fetch('/api/auth/check-profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${data.session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to verify profile')
+      }
+
+      const { hasProfile } = await response.json()
+
+      // If no profile exists, redirect to onboarding
+      if (!hasProfile) {
+        router.push('/app/onboarding')
+      } else {
+        router.push('/app')
+      }
       router.refresh()
     } catch (err: any) {
       setError(err.message)
