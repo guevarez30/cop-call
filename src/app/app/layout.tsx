@@ -22,21 +22,12 @@ import { Menu, Home, Settings, User, LogOut } from "lucide-react";
 import { RoleProvider, useRole } from "@/lib/role-context";
 import { UserProfileProvider, useUserProfile } from "@/lib/user-profile-context";
 import { createClient } from "@/lib/supabase/client";
+import { ThemeSync } from "@/components/theme-sync";
 
 function NavigationItems() {
-  const { isAdmin } = useRole();
-
-  const baseItems = [
+  return [
     { name: "Dashboard", href: "/app", icon: Home },
-    { name: "Settings", href: "/app/settings", icon: Settings },
   ];
-
-  const adminItems = [
-    { name: "Dashboard", href: "/app", icon: Home },
-    { name: "Settings", href: "/app/settings", icon: Settings },
-  ];
-
-  return isAdmin ? adminItems : baseItems;
 }
 
 function RoleToggle() {
@@ -65,6 +56,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const navigationItems = NavigationItems();
   const router = useRouter();
   const { profile, loading: profileLoading } = useUserProfile();
+  const { isAdmin } = useRole();
 
   // Get user initials for avatar
   const getInitials = (name: string | null) => {
@@ -165,12 +157,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/app/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/app/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-destructive"
@@ -203,6 +197,7 @@ export default function AppLayout({
   return (
     <UserProfileProvider>
       <RoleProvider>
+        <ThemeSync />
         <AppLayoutContent>{children}</AppLayoutContent>
       </RoleProvider>
     </UserProfileProvider>

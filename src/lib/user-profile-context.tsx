@@ -9,6 +9,7 @@ interface UserProfileContextType {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
+  updateProfile: (updates: { full_name?: string; theme?: 'light' | 'dark' }) => Promise<void>;
 }
 
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
@@ -60,6 +61,46 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProfile = async (updates: { full_name?: string; theme?: 'light' | 'dark' }) => {
+    try {
+      setError(null);
+
+      const supabase = createClient();
+
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      // Update profile via API
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMsg = errorData.details
+          ? `${errorData.error}: ${errorData.details}`
+          : errorData.error || 'Failed to update profile';
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      setProfile(data.profile);
+    } catch (err: any) {
+      console.error('Error updating profile:', err);
+      setError(err.message || 'Failed to update profile');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -71,6 +112,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         refreshProfile: fetchProfile,
+        updateProfile,
       }}
     >
       {children}
