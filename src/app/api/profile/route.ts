@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'GET' })
+
   try {
+    requestLogger.debug('Profile fetch request received')
+
     // Get the auth token from the request headers
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      console.error('Missing or invalid authorization header')
+      requestLogger.warn('Missing or invalid authorization header')
       return NextResponse.json(
         { error: 'No authorization header' },
         { status: 401 }
@@ -32,12 +38,15 @@ export async function GET(request: NextRequest) {
     const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
     if (authError || !authUser) {
-      console.error('Invalid authentication token:', authError?.message)
+      requestLogger.error({ err: authError }, 'Invalid authentication token')
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       )
     }
+
+    const userLogger = requestLogger.child({ userId: authUser.id })
+    userLogger.debug('Fetching user profile')
 
     // Fetch user profile from database using service role (bypasses RLS)
     const { data: userProfile, error: profileError } = await supabaseAdmin
@@ -59,7 +68,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (profileError) {
-      console.error('Profile fetch error:', profileError)
+      userLogger.error({ err: profileError }, 'Failed to fetch profile')
       return NextResponse.json(
         {
           error: 'Failed to fetch profile',
@@ -72,21 +81,24 @@ export async function GET(request: NextRequest) {
     }
 
     if (!userProfile) {
-      console.error('Profile not found for user:', authUser.id)
+      userLogger.error('Profile not found')
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
       )
     }
 
-    console.log('Profile fetched successfully for:', userProfile.email)
+    userLogger.info({
+      organizationId: userProfile.organization_id,
+      role: userProfile.role
+    }, 'Profile fetched successfully')
 
     return NextResponse.json({
       success: true,
       profile: userProfile
     })
   } catch (error: any) {
-    console.error('Profile API error:', error)
+    requestLogger.error({ err: error }, 'Unexpected error fetching profile')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -95,11 +107,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'PATCH' })
+
   try {
+    requestLogger.debug('Profile update request received')
+
     // Get the auth token from the request headers
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      console.error('Missing or invalid authorization header')
+      requestLogger.warn('Missing or invalid authorization header')
       return NextResponse.json(
         { error: 'No authorization header' },
         { status: 401 }
@@ -125,16 +142,20 @@ export async function PATCH(request: NextRequest) {
     const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
     if (authError || !authUser) {
-      console.error('Invalid authentication token:', authError?.message)
+      requestLogger.error({ err: authError }, 'Invalid authentication token')
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
+    const userLogger = requestLogger.child({ userId: authUser.id })
+
     // Parse request body
     const body = await request.json()
     const { full_name, theme } = body
+
+    userLogger.debug({ updates: { full_name, theme } }, 'Processing profile update')
 
     // Validate inputs
     const updates: { full_name?: string; theme?: string } = {}
@@ -188,7 +209,7 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (updateError) {
-      console.error('Profile update error:', updateError)
+      userLogger.error({ err: updateError, updates }, 'Failed to update profile')
       return NextResponse.json(
         {
           error: 'Failed to update profile',
@@ -201,21 +222,25 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (!updatedProfile) {
-      console.error('Profile not found for user:', authUser.id)
+      userLogger.error('Profile not found after update')
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
       )
     }
 
-    console.log('Profile updated successfully for:', updatedProfile.email)
+    userLogger.info({
+      organizationId: updatedProfile.organization_id,
+      role: updatedProfile.role,
+      updates
+    }, 'Profile updated successfully')
 
     return NextResponse.json({
       success: true,
       profile: updatedProfile
     })
   } catch (error: any) {
-    console.error('Profile update API error:', error)
+    requestLogger.error({ err: error }, 'Unexpected error updating profile')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

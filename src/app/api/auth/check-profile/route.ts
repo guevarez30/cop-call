@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 /**
  * Check Profile API Endpoint
@@ -7,7 +8,11 @@ import { createClient } from '@supabase/supabase-js'
  * Used during login flow to determine if user needs onboarding
  */
 export async function GET(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+  const requestLogger = logger.child({ requestId, route: '/api/auth/check-profile' })
+
   try {
+    requestLogger.debug('Check profile request received')
     // Verify authentication
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
@@ -38,14 +43,14 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
     if (authError || !user) {
-      console.error('Auth error:', authError)
+      requestLogger.error({ err: authError }, 'Authentication failed')
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
       )
     }
 
-    console.log('Checking profile for user ID:', user.id)
+    requestLogger.debug({ userId: user.id }, 'Checking profile for user')
 
     // Check if user has a profile
     const { data: profile, error: profileError } = await supabaseAdmin
@@ -54,19 +59,27 @@ export async function GET(request: NextRequest) {
       .eq('id', user.id)
       .maybeSingle()
 
-    console.log('Profile query result:', { profile, error: profileError })
+    requestLogger.debug({
+      userId: user.id,
+      hasProfile: !!profile,
+      hasOrganization: !!profile?.organization_id
+    }, 'Profile query result')
 
     // maybeSingle() returns null if not found (no error thrown)
     // Only throw if there's an actual database error
     if (profileError) {
-      console.error('Database error checking profile:', profileError)
+      requestLogger.error({ err: profileError, userId: user.id }, 'Database error checking profile')
       return NextResponse.json(
         { error: 'Database error' },
         { status: 500 }
       )
     }
 
-    console.log('Returning hasProfile:', !!profile, 'hasOrganization:', !!profile?.organization_id)
+    requestLogger.info({
+      userId: user.id,
+      hasProfile: !!profile,
+      hasOrganization: !!profile?.organization_id
+    }, 'Profile check complete')
 
     return NextResponse.json({
       hasProfile: !!profile,
@@ -74,7 +87,7 @@ export async function GET(request: NextRequest) {
       userId: user.id
     })
   } catch (error: any) {
-    console.error('Check profile error:', error)
+    requestLogger.error({ err: error }, 'Unexpected error in check profile')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

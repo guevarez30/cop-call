@@ -5,50 +5,50 @@ import { requireAuth } from "@/lib/auth";
 function AdminDashboard() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Organization Dashboard</h1>
-        <p className="text-muted-foreground">Overview of organization-wide metrics</p>
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Organization Dashboard</h1>
+        <p className="text-base text-muted-foreground">Overview of organization-wide metrics</p>
       </div>
 
       {/* Stats Grid - Organization-wide metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Active members</p>
+            <div className="text-3xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground mt-2">Active members</p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 2</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Description</p>
+            <div className="text-3xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground mt-2">Description</p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 3</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Description</p>
+            <div className="text-3xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground mt-2">Description</p>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 4</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">--</div>
-            <p className="text-xs text-muted-foreground mt-1">Description</p>
+            <div className="text-3xl font-bold">--</div>
+            <p className="text-xs text-muted-foreground mt-2">Description</p>
           </CardContent>
         </Card>
       </div>
@@ -56,12 +56,12 @@ function AdminDashboard() {
       {/* Organization Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>What's happening in your organization</CardDescription>
+          <CardTitle className="text-xl">Recent Activity</CardTitle>
+          <CardDescription className="text-base">What's happening in your organization</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No activity yet. Get started by building your application features!</p>
+          <div className="text-center py-12 text-muted-foreground">
+            <p className="text-base">No activity yet. Get started by building your application features!</p>
           </div>
         </CardContent>
       </Card>
@@ -72,46 +72,46 @@ function AdminDashboard() {
 function UserDashboard() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
-        <p className="text-muted-foreground">Your personal overview</p>
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
+        <p className="text-base text-muted-foreground">Your personal overview</p>
       </div>
 
       {/* Stats Grid - Personal metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 1</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-3xl font-bold">0</div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 2</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-3xl font-bold">0</div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 3</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-3xl font-bold">0</div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all">
-          <CardHeader className="p-4">
+        <Card className="transition-all hover:shadow-md hover:border-primary/50">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Metric 4</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-3xl font-bold">0</div>
           </CardContent>
         </Card>
       </div>
@@ -119,13 +119,13 @@ function UserDashboard() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Your recent activity</CardDescription>
+          <CardTitle className="text-xl">Recent Activity</CardTitle>
+          <CardDescription className="text-base">Your recent activity</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No activity yet. Start using the application to see your data here!</p>
-            <Button className="mt-4">Get Started</Button>
+          <div className="text-center py-12 text-muted-foreground">
+            <p className="text-base">No activity yet. Start using the application to see your data here!</p>
+            <Button className="mt-6 h-11">Get Started</Button>
           </div>
         </CardContent>
       </Card>

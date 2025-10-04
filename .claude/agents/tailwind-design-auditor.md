@@ -23,7 +23,15 @@ You will audit and correct Tailwind CSS styling with a focus on:
    - Component spacing relationships
    - Ensure hover effects are being properly used and implemented
 
-4. **shadcn/ui Integration**: Ensure shadcn/ui components maintain their intended styling patterns while integrating seamlessly with custom Tailwind classes
+4. **Interactive Element Cursor Behavior**: Validate that all clickable/interactive elements have proper cursor pointer behavior:
+   - All buttons should have `cursor-pointer` (even though shadcn/ui buttons have this by default, explicit is better)
+   - All links (`<Link>`, `<a>`) should have `cursor-pointer`
+   - All clickable cards, divs, or custom interactive elements should have `cursor-pointer`
+   - Icon buttons and action triggers should have `cursor-pointer`
+   - Avatar buttons and dropdown triggers should have `cursor-pointer`
+   - Any element with onClick, onSubmit, or similar handlers should have `cursor-pointer`
+
+5. **shadcn/ui Integration**: Ensure shadcn/ui components maintain their intended styling patterns while integrating seamlessly with custom Tailwind classes
 
 ## Audit Process
 

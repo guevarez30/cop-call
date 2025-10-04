@@ -24,7 +24,6 @@ export async function requireAuth() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  console.log(user)
 
   if (!user) {
     redirect('/login')
@@ -36,10 +35,6 @@ export async function requireAuth() {
     .select('*')
     .eq('id', user.id)
     .maybeSingle()
-
-  console.log('Auth check - User ID:', user.id)
-  console.log('Auth check - Profile:', profile)
-  console.log('Auth check - Error:', error)
 
   if (error) {
     console.error('Error fetching user profile:', error)

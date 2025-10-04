@@ -96,7 +96,7 @@ export default function ProfilePage() {
               <p className="text-lg text-muted-foreground">
                 {error || 'Profile not found'}
               </p>
-              <Button onClick={refreshProfile} className="mt-4">
+              <Button onClick={refreshProfile} className="mt-4 cursor-pointer">
                 Try Again
               </Button>
             </div>
@@ -109,16 +109,16 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Profile</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
       </div>
 
       {/* Profile Header Card */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
               <AvatarImage src="/avatar-placeholder.png" alt={profile.full_name || 'User'} />
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="text-xl sm:text-2xl">
                 {getInitials(profile.full_name)}
               </AvatarFallback>
             </Avatar>
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
                     placeholder="Enter your name"
-                    className="text-2xl font-bold h-auto py-1"
+                    className="text-lg sm:text-2xl font-bold h-11"
                     disabled={isSavingName}
                     autoFocus
                   />
@@ -138,32 +138,35 @@ export default function ProfilePage() {
                     variant="ghost"
                     onClick={handleSaveName}
                     disabled={isSavingName || !editedName.trim()}
-                    className="h-8 w-8 shrink-0"
+                    className="h-11 w-11 shrink-0 transition-colors"
+                    aria-label="Save name"
                   >
-                    <Check className="h-4 w-4" />
+                    <Check className="h-5 w-5" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={handleCancelEdit}
                     disabled={isSavingName}
-                    className="h-8 w-8 shrink-0"
+                    className="h-11 w-11 shrink-0 transition-colors"
+                    aria-label="Cancel editing"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-2xl">
+                  <CardTitle className="text-xl sm:text-2xl">
                     {profile.full_name || 'No name set'}
                   </CardTitle>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={handleEditName}
-                    className="h-6 w-6 shrink-0 opacity-60 hover:opacity-100"
+                    className="h-11 w-11 shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                    aria-label="Edit name"
                   >
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -179,14 +182,14 @@ export default function ProfilePage() {
       {/* Contact Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
+          <CardTitle className="text-xl">Contact Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Mail className="h-5 w-5 text-muted-foreground" />
-            <div>
+          <div className="flex items-start gap-4">
+            <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Email</p>
-              <p className="text-base">{profile.email}</p>
+              <p className="text-base break-words">{profile.email}</p>
             </div>
           </div>
         </CardContent>
@@ -195,30 +198,30 @@ export default function ProfilePage() {
       {/* Account Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Details</CardTitle>
+          <CardTitle className="text-xl">Account Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-            <div>
+          <div className="flex items-start gap-4">
+            <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Organization</p>
-              <p className="text-base">{profile.organizations.name}</p>
+              <p className="text-base break-words">{profile.organizations.name}</p>
             </div>
           </div>
           <Separator />
-          <div className="flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <div>
+          <div className="flex items-start gap-4">
+            <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Member Since</p>
               <p className="text-base">{formatDate(profile.created_at)}</p>
             </div>
           </div>
           <Separator />
-          <div className="flex items-center gap-3">
-            <div className="h-5 w-5 flex items-center justify-center">
+          <div className="flex items-start gap-4">
+            <div className="h-5 w-5 flex items-center justify-center mt-0.5">
               <div className="h-3 w-3 rounded-full bg-primary" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Status</p>
               <p className="text-base">Active</p>
             </div>
@@ -231,29 +234,29 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
-            <CardTitle>Security</CardTitle>
+            <CardTitle className="text-xl">Security</CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-base">
             Manage your account security settings
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
               <p className="font-medium">Password</p>
               <p className="text-sm text-muted-foreground">Change your account password</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowPasswordDialog(true)}>
+            <Button variant="outline" size="default" onClick={() => setShowPasswordDialog(true)} className="h-11 w-full sm:w-auto shrink-0">
               Change
             </Button>
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
               <p className="font-medium">Two-Factor Authentication</p>
               <p className="text-sm text-muted-foreground">Not enabled</p>
             </div>
-            <Button variant="outline" size="sm">Enable</Button>
+            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">Enable</Button>
           </div>
         </CardContent>
       </Card>
@@ -263,58 +266,58 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            <CardTitle>Preferences</CardTitle>
+            <CardTitle className="text-xl">Preferences</CardTitle>
           </div>
-          <CardDescription>
+          <CardDescription className="text-base">
             Customize your experience
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-4">
               {theme === "dark" ? (
-                <Moon className="h-5 w-5 text-muted-foreground" />
+                <Moon className="h-5 w-5 text-muted-foreground mt-0.5" />
               ) : (
-                <Sun className="h-5 w-5 text-muted-foreground" />
+                <Sun className="h-5 w-5 text-muted-foreground mt-0.5" />
               )}
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-medium">Theme</p>
                 <p className="text-sm text-muted-foreground">
                   {theme === "dark" ? "Dark mode" : "Light mode"}
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant={theme === "light" ? "default" : "outline"}
-                size="sm"
+                size="default"
                 onClick={() => handleThemeChange("light")}
-                className="w-24"
+                className="h-11 flex-1 transition-all"
               >
-                <Sun className="h-4 w-4 mr-1" />
+                <Sun className="h-4 w-4 mr-2" />
                 Light
               </Button>
               <Button
                 variant={theme === "dark" ? "default" : "outline"}
-                size="sm"
+                size="default"
                 onClick={() => handleThemeChange("dark")}
-                className="w-24"
+                className="h-11 flex-1 transition-all"
               >
-                <Moon className="h-4 w-4 mr-1" />
+                <Moon className="h-4 w-4 mr-2" />
                 Dark
               </Button>
             </div>
           </div>
           <Separator />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4 flex-1 min-w-0">
+              <Bell className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
                 <p className="font-medium">Email Notifications</p>
                 <p className="text-sm text-muted-foreground">Receive updates via email</p>
               </div>
             </div>
-            <Button variant="outline" size="sm">Configure</Button>
+            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">Configure</Button>
           </div>
         </CardContent>
       </Card>
@@ -322,18 +325,18 @@ export default function ProfilePage() {
       {/* Danger Zone */}
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl text-destructive">Danger Zone</CardTitle>
+          <CardDescription className="text-base">
             Irreversible actions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
               <p className="font-medium">Delete Account</p>
               <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
             </div>
-            <Button variant="destructive" size="sm">Delete</Button>
+            <Button variant="destructive" size="default" className="h-11 w-full sm:w-auto shrink-0">Delete</Button>
           </div>
         </CardContent>
       </Card>

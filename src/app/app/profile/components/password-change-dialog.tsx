@@ -116,8 +116,8 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl">Change Password</DialogTitle>
+          <DialogDescription className="text-base">
             Enter your current password and choose a new one.
           </DialogDescription>
         </DialogHeader>
@@ -134,20 +134,21 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
                   disabled={isLoading || success}
-                  className="pr-10"
+                  className="pr-12 h-11"
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  size="icon"
+                  className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   disabled={isLoading || success}
+                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                 >
                   {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </Button>
               </div>
@@ -164,20 +165,21 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
                   disabled={isLoading || success}
-                  className="pr-10"
+                  className="pr-12 h-11"
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  size="icon"
+                  className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   disabled={isLoading || success}
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
                 >
                   {showNewPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </Button>
               </div>
@@ -197,20 +199,21 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
                   disabled={isLoading || success}
-                  className="pr-10"
+                  className="pr-12 h-11"
                 />
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  size="icon"
+                  className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={isLoading || success}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </Button>
               </div>
@@ -233,16 +236,17 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={isLoading || success}
+              className="h-11 w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || success}>
+            <Button type="submit" disabled={isLoading || success} className="h-11 w-full sm:w-auto">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Change Password
             </Button>

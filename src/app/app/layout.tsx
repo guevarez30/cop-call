@@ -23,6 +23,7 @@ import { RoleProvider, useRole } from "@/lib/role-context";
 import { UserProfileProvider, useUserProfile } from "@/lib/user-profile-context";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeSync } from "@/components/theme-sync";
+import { Toaster } from "@/components/ui/sonner";
 
 function NavigationItems() {
   return [
@@ -117,7 +118,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SheetContent>
               </Sheet>
 
-              <Link href="/app" className="text-xl font-bold hover:text-primary transition-colors">
+              <Link href="/app" className="text-xl font-bold hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
                 MicroSaaS
               </Link>
             </div>
@@ -130,7 +131,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
               {/* User Avatar Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src="/avatar-placeholder.png" alt={profile?.full_name || 'User'} />
                       <AvatarFallback>
@@ -199,6 +200,7 @@ export default function AppLayout({
       <RoleProvider>
         <ThemeSync />
         <AppLayoutContent>{children}</AppLayoutContent>
+        <Toaster />
       </RoleProvider>
     </UserProfileProvider>
   );
