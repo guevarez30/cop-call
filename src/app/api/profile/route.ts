@@ -1,26 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { logger } from '@/lib/logger'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
-  const requestId = crypto.randomUUID()
-  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'GET' })
+  const requestId = crypto.randomUUID();
+  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'GET' });
 
   try {
-    requestLogger.debug('Profile fetch request received')
+    requestLogger.debug('Profile fetch request received');
 
     // Get the auth token from the request headers
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      requestLogger.warn('Missing or invalid authorization header')
-      return NextResponse.json(
-        { error: 'No authorization header' },
-        { status: 401 }
-      )
+      requestLogger.warn('Missing or invalid authorization header');
+      return NextResponse.json({ error: 'No authorization header' }, { status: 401 });
     }
 
     // Extract the token
-    const token = authHeader.substring(7)
+    const token = authHeader.substring(7);
 
     // Use service role to bypass RLS for verification and fetching
     const supabaseAdmin = createClient(
@@ -29,29 +26,30 @@ export async function GET(request: NextRequest) {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
-    )
+    );
 
     // Verify the JWT token and get the authenticated user
-    const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !authUser) {
-      requestLogger.error({ err: authError }, 'Invalid authentication token')
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
+      requestLogger.error({ err: authError }, 'Invalid authentication token');
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const userLogger = requestLogger.child({ userId: authUser.id })
-    userLogger.debug('Fetching user profile')
+    const userLogger = requestLogger.child({ userId: authUser.id });
+    userLogger.debug('Fetching user profile');
 
     // Fetch user profile from database using service role (bypasses RLS)
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('users')
-      .select(`
+      .select(
+        `
         id,
         email,
         full_name,
@@ -63,68 +61,63 @@ export async function GET(request: NextRequest) {
           id,
           name
         )
-      `)
+      `
+      )
       .eq('id', authUser.id)
-      .single()
+      .single();
 
     if (profileError) {
-      userLogger.error({ err: profileError }, 'Failed to fetch profile')
+      userLogger.error({ err: profileError }, 'Failed to fetch profile');
       return NextResponse.json(
         {
           error: 'Failed to fetch profile',
           details: profileError.message,
           hint: profileError.hint,
-          code: profileError.code
+          code: profileError.code,
         },
         { status: 500 }
-      )
+      );
     }
 
     if (!userProfile) {
-      userLogger.error('Profile not found')
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      )
+      userLogger.error('Profile not found');
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    userLogger.info({
-      organizationId: userProfile.organization_id,
-      role: userProfile.role
-    }, 'Profile fetched successfully')
+    userLogger.info(
+      {
+        organizationId: userProfile.organization_id,
+        role: userProfile.role,
+      },
+      'Profile fetched successfully'
+    );
 
     return NextResponse.json({
       success: true,
-      profile: userProfile
-    })
+      profile: userProfile,
+    });
   } catch (error: any) {
-    requestLogger.error({ err: error }, 'Unexpected error fetching profile')
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    requestLogger.error({ err: error }, 'Unexpected error fetching profile');
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  const requestId = crypto.randomUUID()
-  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'PATCH' })
+  const requestId = crypto.randomUUID();
+  const requestLogger = logger.child({ requestId, route: '/api/profile', method: 'PATCH' });
 
   try {
-    requestLogger.debug('Profile update request received')
+    requestLogger.debug('Profile update request received');
 
     // Get the auth token from the request headers
-    const authHeader = request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      requestLogger.warn('Missing or invalid authorization header')
-      return NextResponse.json(
-        { error: 'No authorization header' },
-        { status: 401 }
-      )
+      requestLogger.warn('Missing or invalid authorization header');
+      return NextResponse.json({ error: 'No authorization header' }, { status: 401 });
     }
 
     // Extract the token
-    const token = authHeader.substring(7)
+    const token = authHeader.substring(7);
 
     // Use service role to bypass RLS for verification and updating
     const supabaseAdmin = createClient(
@@ -133,41 +126,41 @@ export async function PATCH(request: NextRequest) {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
-    )
+    );
 
     // Verify the JWT token and get the authenticated user
-    const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !authUser) {
-      requestLogger.error({ err: authError }, 'Invalid authentication token')
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
+      requestLogger.error({ err: authError }, 'Invalid authentication token');
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const userLogger = requestLogger.child({ userId: authUser.id })
+    const userLogger = requestLogger.child({ userId: authUser.id });
 
     // Parse request body
-    const body = await request.json()
-    const { full_name, theme } = body
+    const body = await request.json();
+    const { full_name, theme } = body;
 
-    userLogger.debug({ updates: { full_name, theme } }, 'Processing profile update')
+    userLogger.debug({ updates: { full_name, theme } }, 'Processing profile update');
 
     // Validate inputs
-    const updates: { full_name?: string; theme?: string } = {}
+    const updates: { full_name?: string; theme?: string } = {};
 
     if (full_name !== undefined) {
       if (typeof full_name !== 'string' || full_name.trim().length === 0) {
         return NextResponse.json(
           { error: 'Full name must be a non-empty string' },
           { status: 400 }
-        )
+        );
       }
-      updates.full_name = full_name.trim()
+      updates.full_name = full_name.trim();
     }
 
     if (theme !== undefined) {
@@ -175,17 +168,14 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json(
           { error: 'Theme must be either "light" or "dark"' },
           { status: 400 }
-        )
+        );
       }
-      updates.theme = theme
+      updates.theme = theme;
     }
 
     // If no valid updates, return error
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: 'No valid fields to update' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
     // Update user profile
@@ -193,7 +183,8 @@ export async function PATCH(request: NextRequest) {
       .from('users')
       .update(updates)
       .eq('id', authUser.id)
-      .select(`
+      .select(
+        `
         id,
         email,
         full_name,
@@ -205,45 +196,43 @@ export async function PATCH(request: NextRequest) {
           id,
           name
         )
-      `)
-      .single()
+      `
+      )
+      .single();
 
     if (updateError) {
-      userLogger.error({ err: updateError, updates }, 'Failed to update profile')
+      userLogger.error({ err: updateError, updates }, 'Failed to update profile');
       return NextResponse.json(
         {
           error: 'Failed to update profile',
           details: updateError.message,
           hint: updateError.hint,
-          code: updateError.code
+          code: updateError.code,
         },
         { status: 500 }
-      )
+      );
     }
 
     if (!updatedProfile) {
-      userLogger.error('Profile not found after update')
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      )
+      userLogger.error('Profile not found after update');
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    userLogger.info({
-      organizationId: updatedProfile.organization_id,
-      role: updatedProfile.role,
-      updates
-    }, 'Profile updated successfully')
+    userLogger.info(
+      {
+        organizationId: updatedProfile.organization_id,
+        role: updatedProfile.role,
+        updates,
+      },
+      'Profile updated successfully'
+    );
 
     return NextResponse.json({
       success: true,
-      profile: updatedProfile
-    })
+      profile: updatedProfile,
+    });
   } catch (error: any) {
-    requestLogger.error({ err: error }, 'Unexpected error updating profile')
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    requestLogger.error({ err: error }, 'Unexpected error updating profile');
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,23 +1,80 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Mail, Calendar, Building2, Shield, Loader2, Bell, Lock, Globe, Moon, Sun, Pencil, Check, X } from "lucide-react";
-import { useUserProfile } from "@/lib/user-profile-context";
-import { useTheme } from "@/lib/theme-context";
-import { PasswordChangeDialog } from "./components/password-change-dialog";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import {
+  Mail,
+  Calendar,
+  Building2,
+  Shield,
+  Loader2,
+  Bell,
+  Lock,
+  Globe,
+  Moon,
+  Sun,
+  Pencil,
+  Check,
+  X,
+} from 'lucide-react';
+import { useUserProfile } from '@/lib/user-profile-context';
+import { useTheme } from '@/lib/theme-context';
+import { PasswordChangeDialog } from './components/password-change-dialog';
+import { MfaSetupDialog } from './components/mfa-setup-dialog';
+import { MfaDisableDialog } from './components/mfa-disable-dialog';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ProfilePage() {
   const { profile, loading, error, refreshProfile, updateProfile } = useUserProfile();
   const { theme, setTheme } = useTheme();
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState("");
+  const [editedName, setEditedName] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+
+  // MFA state
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [checkingMfa, setCheckingMfa] = useState(true);
+  const [showMfaSetupDialog, setShowMfaSetupDialog] = useState(false);
+  const [showMfaDisableDialog, setShowMfaDisableDialog] = useState(false);
+
+  // Check MFA status on mount
+  useEffect(() => {
+    const checkMfaStatus = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.mfa.listFactors();
+
+        if (error) {
+          console.error('Error checking MFA status:', error);
+          return;
+        }
+
+        // Check if user has any verified TOTP factors
+        const totpFactors = data?.totp || [];
+        const verifiedFactor = totpFactors.find((f) => f.status === 'verified');
+
+        if (verifiedFactor) {
+          setMfaEnabled(true);
+          setMfaFactorId(verifiedFactor.id);
+        } else {
+          setMfaEnabled(false);
+          setMfaFactorId(null);
+        }
+      } catch (err) {
+        console.error('Error checking MFA status:', err);
+      } finally {
+        setCheckingMfa(false);
+      }
+    };
+
+    checkMfaStatus();
+  }, []);
 
   // Handle theme change
   const handleThemeChange = async (newTheme: 'light' | 'dark') => {
@@ -35,7 +92,7 @@ export default function ProfilePage() {
 
   // Handle name edit
   const handleEditName = () => {
-    setEditedName(profile?.full_name || "");
+    setEditedName(profile?.full_name || '');
     setIsEditingName(true);
   };
 
@@ -55,7 +112,36 @@ export default function ProfilePage() {
 
   const handleCancelEdit = () => {
     setIsEditingName(false);
-    setEditedName("");
+    setEditedName('');
+  };
+
+  // Refresh MFA status
+  const refreshMfaStatus = async () => {
+    try {
+      setCheckingMfa(true);
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.mfa.listFactors();
+
+      if (error) {
+        console.error('Error checking MFA status:', error);
+        return;
+      }
+
+      const totpFactors = data?.totp || [];
+      const verifiedFactor = totpFactors.find((f) => f.status === 'verified');
+
+      if (verifiedFactor) {
+        setMfaEnabled(true);
+        setMfaFactorId(verifiedFactor.id);
+      } else {
+        setMfaEnabled(false);
+        setMfaFactorId(null);
+      }
+    } catch (err) {
+      console.error('Error refreshing MFA status:', err);
+    } finally {
+      setCheckingMfa(false);
+    }
   };
 
   // Get user initials for avatar
@@ -63,7 +149,7 @@ export default function ProfilePage() {
     if (!name) return '?';
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
@@ -93,9 +179,7 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="py-12">
             <div className="text-center">
-              <p className="text-lg text-muted-foreground">
-                {error || 'Profile not found'}
-              </p>
+              <p className="text-lg text-muted-foreground">{error || 'Profile not found'}</p>
               <Button onClick={refreshProfile} className="mt-4 cursor-pointer">
                 Try Again
               </Button>
@@ -246,7 +330,12 @@ export default function ProfilePage() {
               <p className="font-medium">Password</p>
               <p className="text-sm text-muted-foreground">Change your account password</p>
             </div>
-            <Button variant="outline" size="default" onClick={() => setShowPasswordDialog(true)} className="h-11 w-full sm:w-auto shrink-0">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => setShowPasswordDialog(true)}
+              className="h-11 w-full sm:w-auto shrink-0"
+            >
               Change
             </Button>
           </div>
@@ -254,9 +343,40 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="font-medium">Two-Factor Authentication</p>
-              <p className="text-sm text-muted-foreground">Not enabled</p>
+              <p className="text-sm text-muted-foreground">
+                {checkingMfa ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Checking...
+                  </span>
+                ) : mfaEnabled ? (
+                  <span className="text-green-600 dark:text-green-500">Enabled</span>
+                ) : (
+                  'Not enabled'
+                )}
+              </p>
             </div>
-            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">Enable</Button>
+            {mfaEnabled ? (
+              <Button
+                variant="outline"
+                size="default"
+                className="h-11 w-full sm:w-auto shrink-0"
+                onClick={() => setShowMfaDisableDialog(true)}
+                disabled={checkingMfa}
+              >
+                Disable
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="default"
+                className="h-11 w-full sm:w-auto shrink-0"
+                onClick={() => setShowMfaSetupDialog(true)}
+                disabled={checkingMfa}
+              >
+                Enable
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -268,14 +388,12 @@ export default function ProfilePage() {
             <Globe className="h-5 w-5" />
             <CardTitle className="text-xl">Preferences</CardTitle>
           </div>
-          <CardDescription className="text-base">
-            Customize your experience
-          </CardDescription>
+          <CardDescription className="text-base">Customize your experience</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-start gap-4">
-              {theme === "dark" ? (
+              {theme === 'dark' ? (
                 <Moon className="h-5 w-5 text-muted-foreground mt-0.5" />
               ) : (
                 <Sun className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -283,24 +401,24 @@ export default function ProfilePage() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium">Theme</p>
                 <p className="text-sm text-muted-foreground">
-                  {theme === "dark" ? "Dark mode" : "Light mode"}
+                  {theme === 'dark' ? 'Dark mode' : 'Light mode'}
                 </p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
-                variant={theme === "light" ? "default" : "outline"}
+                variant={theme === 'light' ? 'default' : 'outline'}
                 size="default"
-                onClick={() => handleThemeChange("light")}
+                onClick={() => handleThemeChange('light')}
                 className="h-11 flex-1 transition-all"
               >
                 <Sun className="h-4 w-4 mr-2" />
                 Light
               </Button>
               <Button
-                variant={theme === "dark" ? "default" : "outline"}
+                variant={theme === 'dark' ? 'default' : 'outline'}
                 size="default"
-                onClick={() => handleThemeChange("dark")}
+                onClick={() => handleThemeChange('dark')}
                 className="h-11 flex-1 transition-all"
               >
                 <Moon className="h-4 w-4 mr-2" />
@@ -317,7 +435,9 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Receive updates via email</p>
               </div>
             </div>
-            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">Configure</Button>
+            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">
+              Configure
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -326,25 +446,39 @@ export default function ProfilePage() {
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="text-xl text-destructive">Danger Zone</CardTitle>
-          <CardDescription className="text-base">
-            Irreversible actions
-          </CardDescription>
+          <CardDescription className="text-base">Irreversible actions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="font-medium">Delete Account</p>
-              <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all data
+              </p>
             </div>
-            <Button variant="destructive" size="default" className="h-11 w-full sm:w-auto shrink-0">Delete</Button>
+            <Button variant="destructive" size="default" className="h-11 w-full sm:w-auto shrink-0">
+              Delete
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Password Change Dialog */}
-      <PasswordChangeDialog
-        open={showPasswordDialog}
-        onOpenChange={setShowPasswordDialog}
+      <PasswordChangeDialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog} />
+
+      {/* MFA Setup Dialog */}
+      <MfaSetupDialog
+        open={showMfaSetupDialog}
+        onOpenChange={setShowMfaSetupDialog}
+        onSuccess={refreshMfaStatus}
+      />
+
+      {/* MFA Disable Dialog */}
+      <MfaDisableDialog
+        open={showMfaDisableDialog}
+        onOpenChange={setShowMfaDisableDialog}
+        onSuccess={refreshMfaStatus}
+        factorId={mfaFactorId}
       />
     </div>
   );

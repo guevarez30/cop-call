@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { createClient } from "@/lib/supabase/client";
-import { Loader2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { createClient } from '@/lib/supabase/client';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface InviteUserDialogProps {
   open: boolean;
@@ -28,8 +28,8 @@ export default function InviteUserDialog({
   onOpenChange,
   onInviteSent,
 }: InviteUserDialogProps) {
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"user" | "admin">("user");
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,15 +45,15 @@ export default function InviteUserDialog({
       } = await supabase.auth.getSession();
 
       if (!session) {
-        setError("You must be logged in to send invitations");
+        setError('You must be logged in to send invitations');
         setLoading(false);
         return;
       }
 
-      const response = await fetch("/api/invitations/send", {
-        method: "POST",
+      const response = await fetch('/api/invitations/send', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ email, role }),
@@ -62,21 +62,21 @@ export default function InviteUserDialog({
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to send invitation");
+        setError(data.error || 'Failed to send invitation');
         setLoading(false);
         return;
       }
 
       // Success - reset form and close dialog
       toast.success(`Invitation sent to ${email}`);
-      setEmail("");
-      setRole("user");
+      setEmail('');
+      setRole('user');
       setLoading(false);
       onOpenChange(false);
       onInviteSent();
     } catch (err: any) {
-      console.error("Error sending invitation:", err);
-      setError("An unexpected error occurred");
+      console.error('Error sending invitation:', err);
+      setError('An unexpected error occurred');
       setLoading(false);
     }
   };
@@ -87,8 +87,8 @@ export default function InviteUserDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">Invite Team Member</DialogTitle>
           <DialogDescription className="text-base">
-            Send an invitation to join your organization. They'll receive an email
-            with instructions to get started.
+            Send an invitation to join your organization. They'll receive an email with instructions
+            to get started.
           </DialogDescription>
         </DialogHeader>
 
@@ -120,7 +120,7 @@ export default function InviteUserDialog({
               <select
                 id="role"
                 value={role}
-                onChange={(e) => setRole(e.target.value as "user" | "admin")}
+                onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
                 disabled={loading}
                 className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -128,9 +128,9 @@ export default function InviteUserDialog({
                 <option value="admin">Admin</option>
               </select>
               <p className="text-sm text-muted-foreground">
-                {role === "admin"
-                  ? "Admins have full access to organization settings and all data"
-                  : "Users have access to create and manage their own data"}
+                {role === 'admin'
+                  ? 'Admins have full access to organization settings and all data'
+                  : 'Users have access to create and manage their own data'}
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -9,12 +9,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface PasswordChangeDialogProps {
   open: boolean;
@@ -22,9 +22,9 @@ interface PasswordChangeDialogProps {
 }
 
 export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialogProps) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,22 +39,22 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
 
     // Validation
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError("All fields are required");
+      setError('All fields are required');
       return;
     }
 
     if (newPassword.length < 8) {
-      setError("New password must be at least 8 characters long");
+      setError('New password must be at least 8 characters long');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError('New passwords do not match');
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError("New password must be different from current password");
+      setError('New password must be different from current password');
       return;
     }
 
@@ -64,12 +64,12 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
 
       // First, verify current password by attempting to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: (await supabase.auth.getUser()).data.user?.email || "",
+        email: (await supabase.auth.getUser()).data.user?.email || '',
         password: currentPassword,
       });
 
       if (signInError) {
-        setError("Current password is incorrect");
+        setError('Current password is incorrect');
         return;
       }
 
@@ -85,9 +85,9 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
 
       // Success
       setSuccess(true);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
 
       // Close dialog after a short delay
       setTimeout(() => {
@@ -95,7 +95,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
         setSuccess(false);
       }, 2000);
     } catch (err: any) {
-      setError(err.message || "Failed to change password");
+      setError(err.message || 'Failed to change password');
     } finally {
       setIsLoading(false);
     }
@@ -103,9 +103,9 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
 
   const handleClose = () => {
     if (!isLoading) {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
       setError(null);
       setSuccess(false);
       onOpenChange(false);
@@ -129,7 +129,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
               <div className="relative">
                 <Input
                   id="current-password"
-                  type={showCurrentPassword ? "text" : "password"}
+                  type={showCurrentPassword ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
@@ -143,7 +143,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   disabled={isLoading || success}
-                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                  aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
                 >
                   {showCurrentPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -160,7 +160,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
               <div className="relative">
                 <Input
                   id="new-password"
-                  type={showNewPassword ? "text" : "password"}
+                  type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
@@ -174,18 +174,12 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   disabled={isLoading || success}
-                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  aria-label={showNewPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showNewPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters
-              </p>
+              <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
             </div>
 
             {/* Confirm Password */}
@@ -194,7 +188,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
               <div className="relative">
                 <Input
                   id="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
@@ -208,7 +202,7 @@ export function PasswordChangeDialog({ open, onOpenChange }: PasswordChangeDialo
                   className="absolute right-0 top-0 h-11 w-11 hover:text-primary transition-colors"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={isLoading || success}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />

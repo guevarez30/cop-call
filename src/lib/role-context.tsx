@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useUserProfile } from "@/lib/user-profile-context";
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useUserProfile } from '@/lib/user-profile-context';
 
-export type UserRole = "admin" | "user";
+export type UserRole = 'admin' | 'user';
 
 interface RoleContextType {
   role: UserRole;
@@ -15,11 +15,11 @@ interface RoleContextType {
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const isDevelopment = process.env.NODE_ENV === 'development';
   const { profile, loading } = useUserProfile();
 
   // Use real user role from profile, default to "user"
-  const realUserRole: UserRole = profile?.role || "user";
+  const realUserRole: UserRole = profile?.role || 'user';
   const [role, setRole] = useState<UserRole>(realUserRole);
 
   // Update role when profile loads or changes
@@ -34,7 +34,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       value={{
         role,
         setRole,
-        isAdmin: role === "admin",
+        isAdmin: role === 'admin',
         isDevelopment,
       }}
     >
@@ -46,7 +46,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 export function useRole() {
   const context = useContext(RoleContext);
   if (context === undefined) {
-    throw new Error("useRole must be used within a RoleProvider");
+    throw new Error('useRole must be used within a RoleProvider');
   }
   return context;
 }

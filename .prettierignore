@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Cache
+.turbo
+.cache
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Git
+.git
+
+# Test results
+coverage
+playwright-report
+test-results
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Public assets (optional - uncomment if needed)
+# public
+
+# Supabase
+.supabase

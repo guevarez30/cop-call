@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { UserProfile } from "@/lib/types";
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { UserProfile } from '@/lib/types';
 
 interface UserProfileContextType {
   profile: UserProfile | null;
@@ -27,7 +27,9 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
       const supabase = createClient();
 
       // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
         setError('Not authenticated');
@@ -38,8 +40,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
       // Fetch profile from API
       const response = await fetch('/api/profile', {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (!response.ok) {
@@ -68,7 +70,9 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
       const supabase = createClient();
 
       // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
         throw new Error('Not authenticated');
@@ -78,10 +82,10 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
@@ -123,7 +127,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 export function useUserProfile() {
   const context = useContext(UserProfileContext);
   if (context === undefined) {
-    throw new Error("useUserProfile must be used within a UserProfileProvider");
+    throw new Error('useUserProfile must be used within a UserProfileProvider');
   }
   return context;
 }

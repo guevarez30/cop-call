@@ -1,8 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --font-family-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-family-mono: "Geist Mono", ui-monospace, monospace;
+  --font-family-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: 'Geist Mono', ui-monospace, monospace;
 
   /* Light mode - Clean white background */
   --color-background: oklch(1 0 0);

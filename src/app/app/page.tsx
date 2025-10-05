@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { requireAuth } from "@/lib/auth";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { requireAuth } from '@/lib/auth';
 
 function AdminDashboard() {
   return (
@@ -57,11 +57,15 @@ function AdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Recent Activity</CardTitle>
-          <CardDescription className="text-base">What's happening in your organization</CardDescription>
+          <CardDescription className="text-base">
+            What's happening in your organization
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-muted-foreground">
-            <p className="text-base">No activity yet. Get started by building your application features!</p>
+            <p className="text-base">
+              No activity yet. Get started by building your application features!
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -124,7 +128,9 @@ function UserDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-muted-foreground">
-            <p className="text-base">No activity yet. Start using the application to see your data here!</p>
+            <p className="text-base">
+              No activity yet. Start using the application to see your data here!
+            </p>
             <Button className="mt-6 h-11">Get Started</Button>
           </div>
         </CardContent>

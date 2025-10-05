@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useTheme } from "@/lib/theme-context";
-import { useUserProfile } from "@/lib/user-profile-context";
+import { useEffect } from 'react';
+import { useTheme } from '@/lib/theme-context';
+import { useUserProfile } from '@/lib/user-profile-context';
 
 export function ThemeSync() {
   const { setTheme } = useTheme();

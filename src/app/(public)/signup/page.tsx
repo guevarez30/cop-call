@@ -1,56 +1,68 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function SignUpPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
-  })
+    password: '',
+  });
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setSuccess(false)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
 
       // Create auth user - profile will be created on first login
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/login`
-        }
-      })
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
 
-      console.log('Signup response:', { authData, authError })
+      console.log('Signup response:', { authData, authError });
 
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create user');
 
-      console.log('Auth user created:', authData.user.id, 'Email confirmed:', authData.user.email_confirmed_at)
+      console.log(
+        'Auth user created:',
+        authData.user.id,
+        'Email confirmed:',
+        authData.user.email_confirmed_at
+      );
 
-      setSuccess(true)
+      setSuccess(true);
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Show success message after registration
   if (success) {
@@ -64,9 +76,12 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg text-sm" role="status">
-              We've sent a verification email to <strong>{formData.email}</strong>.
-              Please check your inbox and click the verification link before logging in.
+            <div
+              className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg text-sm"
+              role="status"
+            >
+              We've sent a verification email to <strong>{formData.email}</strong>. Please check
+              your inbox and click the verification link before logging in.
             </div>
             <p className="text-sm text-muted-foreground">
               After verifying your email, you can{' '}
@@ -80,7 +95,7 @@ export default function SignUpPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,14 +103,15 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
-          <CardDescription className="text-base">
-            Sign up to get started
-          </CardDescription>
+          <CardDescription className="text-base">Sign up to get started</CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded-lg text-sm" role="alert">
+              <div
+                className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded-lg text-sm"
+                role="alert"
+              >
                 {error}
               </div>
             )}
@@ -127,9 +143,7 @@ export default function SignUpPage() {
                 disabled={loading}
                 className="h-11"
               />
-              <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters
-              </p>
+              <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
             </div>
           </CardContent>
 
@@ -151,5 +165,5 @@ export default function SignUpPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

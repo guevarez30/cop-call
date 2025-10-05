@@ -1,15 +1,36 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Users, UserPlus, Shield, Mail, MoreVertical, AlertCircle, Trash2, Loader2, RefreshCw, Pencil, Check, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import InviteUserDialog from "./components/invite-user-dialog";
-import { toast } from "sonner";
-import { useUserProfile } from "@/lib/user-profile-context";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Users,
+  UserPlus,
+  Shield,
+  Mail,
+  MoreVertical,
+  AlertCircle,
+  Trash2,
+  Loader2,
+  RefreshCw,
+  Pencil,
+  Check,
+  X,
+  ShieldCheck,
+  UserCog,
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import InviteUserDialog from './components/invite-user-dialog';
+import { toast } from 'sonner';
+import { useUserProfile } from '@/lib/user-profile-context';
 
 interface SettingsClientProps {
   isAdmin: boolean;
@@ -19,14 +40,14 @@ interface User {
   id: string;
   email: string;
   full_name: string;
-  role: "admin" | "user";
+  role: 'admin' | 'user';
   created_at: string;
 }
 
 interface Invitation {
   id: string;
   email: string;
-  role: "admin" | "user";
+  role: 'admin' | 'user';
   created_at: string;
   expires_at: string;
   invited_by: {
@@ -44,8 +65,9 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [isEditingOrgName, setIsEditingOrgName] = useState(false);
-  const [editedOrgName, setEditedOrgName] = useState("");
+  const [editedOrgName, setEditedOrgName] = useState('');
   const [isSavingOrgName, setIsSavingOrgName] = useState(false);
+  const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
   // If not admin, show unauthorized message
   if (!isAdmin) {
@@ -76,7 +98,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
 
       if (!session) return;
 
-      const response = await fetch("/api/users/list", {
+      const response = await fetch('/api/users/list', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -87,7 +109,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
         setUsers(data.users || []);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error);
     } finally {
       setLoadingUsers(false);
     }
@@ -103,7 +125,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
 
       if (!session) return;
 
-      const response = await fetch("/api/invitations/list", {
+      const response = await fetch('/api/invitations/list', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -114,7 +136,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
         setInvitations(data.invitations || []);
       }
     } catch (error) {
-      console.error("Error fetching invitations:", error);
+      console.error('Error fetching invitations:', error);
     } finally {
       setLoadingInvitations(false);
     }
@@ -131,22 +153,22 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
       if (!session) return;
 
       const response = await fetch(`/api/invitations/${invitationId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
       if (response.ok) {
-        toast.success("Invitation revoked successfully");
+        toast.success('Invitation revoked successfully');
         fetchInvitations();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to revoke invitation");
+        toast.error(data.error || 'Failed to revoke invitation');
       }
     } catch (error) {
-      console.error("Error revoking invitation:", error);
-      toast.error("An unexpected error occurred");
+      console.error('Error revoking invitation:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setRevokingId(null);
     }
@@ -163,21 +185,21 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
       if (!session) return;
 
       const response = await fetch(`/api/invitations/resend/${invitationId}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
       if (response.ok) {
-        toast.success("Invitation email resent successfully");
+        toast.success('Invitation email resent successfully');
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to resend invitation");
+        toast.error(data.error || 'Failed to resend invitation');
       }
     } catch (error) {
-      console.error("Error resending invitation:", error);
-      toast.error("An unexpected error occurred");
+      console.error('Error resending invitation:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setResendingId(null);
     }
@@ -190,7 +212,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
 
   // Handle organization name edit
   const handleEditOrgName = () => {
-    setEditedOrgName(profile?.organizations?.name || "");
+    setEditedOrgName(profile?.organizations?.name || '');
     setIsEditingOrgName(true);
   };
 
@@ -205,31 +227,31 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        toast.error("Not authenticated");
+        toast.error('Not authenticated');
         return;
       }
 
-      const response = await fetch("/api/organizations", {
-        method: "PATCH",
+      const response = await fetch('/api/organizations', {
+        method: 'PATCH',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ name: editedOrgName.trim() }),
       });
 
       if (response.ok) {
-        toast.success("Organization name updated successfully");
+        toast.success('Organization name updated successfully');
         setIsEditingOrgName(false);
         // Refresh profile to get updated organization name
         await refreshProfile();
       } else {
         const data = await response.json();
-        toast.error(data.error || "Failed to update organization name");
+        toast.error(data.error || 'Failed to update organization name');
       }
     } catch (error) {
-      console.error("Failed to save organization name:", error);
-      toast.error("An unexpected error occurred");
+      console.error('Failed to save organization name:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setIsSavingOrgName(false);
     }
@@ -237,7 +259,45 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
 
   const handleCancelOrgEdit = () => {
     setIsEditingOrgName(false);
-    setEditedOrgName("");
+    setEditedOrgName('');
+  };
+
+  const handleChangeRole = async (userId: string, newRole: 'admin' | 'user') => {
+    setChangingRoleId(userId);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error('Not authenticated');
+        return;
+      }
+
+      const response = await fetch(`/api/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      if (response.ok) {
+        const actionText = newRole === 'admin' ? 'promoted to Admin' : 'demoted to User';
+        toast.success(`User ${actionText} successfully`);
+        fetchUsers();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to update user role');
+      }
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setChangingRoleId(null);
+    }
   };
 
   // Fetch data on component mount
@@ -247,10 +307,10 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
   }, []);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -276,7 +336,11 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
               <Users className="h-5 w-5" />
               <CardTitle className="text-xl">Team Members</CardTitle>
             </div>
-            <Button size="default" className="h-11 w-full sm:w-auto" onClick={() => setInviteDialogOpen(true)}>
+            <Button
+              size="default"
+              className="h-11 w-full sm:w-auto"
+              onClick={() => setInviteDialogOpen(true)}
+            >
               <UserPlus className="h-4 w-4 mr-2" />
               Invite User
             </Button>
@@ -298,28 +362,77 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium break-words">{user.full_name}</p>
-                      {user.role === "admin" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium shrink-0">
-                          <Shield className="h-3 w-3" />
-                          Admin
-                        </span>
-                      )}
+              {users.map((user) => {
+                const isCurrentUser = user.id === profile?.id;
+                const adminCount = users.filter((u) => u.role === 'admin').length;
+                const isLastAdmin = user.role === 'admin' && adminCount === 1;
+                const canChangeRole = !isCurrentUser && !isLastAdmin;
+
+                return (
+                  <div
+                    key={user.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium break-words">{user.full_name}</p>
+                        {user.role === 'admin' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium shrink-0">
+                            <Shield className="h-3 w-3" />
+                            Admin
+                          </span>
+                        )}
+                        {isCurrentUser && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs font-medium shrink-0">
+                            You
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground break-words">{user.email}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground break-words">{user.email}</p>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-sm text-muted-foreground hidden sm:block">
+                        Joined {formatDate(user.created_at)}
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-11 w-11"
+                            disabled={changingRoleId === user.id}
+                          >
+                            {changingRoleId === user.id ? (
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <MoreVertical className="h-5 w-5" />
+                            )}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {user.role === 'user' ? (
+                            <DropdownMenuItem
+                              onClick={() => handleChangeRole(user.id, 'admin')}
+                              disabled={!canChangeRole || changingRoleId === user.id}
+                            >
+                              <ShieldCheck className="h-4 w-4 mr-2" />
+                              Promote to Admin
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => handleChangeRole(user.id, 'user')}
+                              disabled={!canChangeRole || changingRoleId === user.id}
+                            >
+                              <UserCog className="h-4 w-4 mr-2" />
+                              {isLastAdmin ? 'Demote to User (Last Admin)' : 'Demote to User'}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground shrink-0">
-                    Joined {formatDate(user.created_at)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -359,7 +472,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium break-words">{invitation.email}</p>
-                        {invitation.role === "admin" && (
+                        {invitation.role === 'admin' && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium shrink-0">
                             <Shield className="h-3 w-3" />
                             Admin
@@ -367,8 +480,8 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Invited by {invitation.invited_by.full_name} · Expires in {daysLeft}{" "}
-                        {daysLeft === 1 ? "day" : "days"}
+                        Invited by {invitation.invited_by.full_name} · Expires in {daysLeft}{' '}
+                        {daysLeft === 1 ? 'day' : 'days'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -456,7 +569,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
             ) : (
               <div className="flex items-center gap-2">
                 <p className="text-base text-muted-foreground flex-1">
-                  {profile?.organizations?.name || "No organization name set"}
+                  {profile?.organizations?.name || 'No organization name set'}
                 </p>
                 <Button
                   size="icon"
@@ -476,7 +589,9 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
               <p className="font-medium">Plan</p>
               <p className="text-sm text-muted-foreground">Free Plan</p>
             </div>
-            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">Upgrade</Button>
+            <Button variant="outline" size="default" className="h-11 w-full sm:w-auto shrink-0">
+              Upgrade
+            </Button>
           </div>
         </CardContent>
       </Card>

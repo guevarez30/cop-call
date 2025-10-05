@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -34,8 +34,8 @@ export default function Home() {
               Build Your Next <span className="text-primary">SaaS Product</span> Faster
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 sm:mb-10">
-              A modern multi-tenant SaaS template with authentication, organizations, and role-based access built-in.
-              Start building your product features from day one.
+              A modern multi-tenant SaaS template with authentication, organizations, and role-based
+              access built-in. Start building your product features from day one.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <Link
@@ -93,9 +93,7 @@ export default function Home() {
         {/* Final CTA Section */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-              Ready to build?
-            </h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">Ready to build?</h2>
             <p className="text-muted-foreground mb-8">
               Start with a solid foundation and focus on what makes your product unique.
             </p>
@@ -117,13 +115,22 @@ export default function Home() {
               © 2025 MicroSaaS. All rights reserved.
             </div>
             <div className="flex gap-6">
-              <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="/privacy"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Privacy
               </Link>
-              <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="/terms"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Terms
               </Link>
-              <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="/contact"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Contact
               </Link>
             </div>

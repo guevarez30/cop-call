@@ -1,5 +1,5 @@
-import { requireAuth } from "@/lib/auth";
-import SettingsClient from "./settings-client";
+import { requireAuth } from '@/lib/auth';
+import SettingsClient from './settings-client';
 
 /**
  * Settings Page

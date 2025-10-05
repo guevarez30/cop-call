@@ -6,14 +6,16 @@ export const logger = pino({
   level: process.env.PINO_LOG_LEVEL || (isDevelopment ? 'debug' : 'info'),
 
   // Pretty print in development, JSON in production
-  transport: isDevelopment ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'HH:MM:ss.l',
-      ignore: 'pid,hostname',
-    },
-  } : undefined,
+  transport: isDevelopment
+    ? {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss.l',
+          ignore: 'pid,hostname',
+        },
+      }
+    : undefined,
 
   // Base configuration
   formatters: {
@@ -36,6 +38,6 @@ export const logger = pino({
       'access_token',
       'refresh_token',
     ],
-    censor: '[REDACTED]'
+    censor: '[REDACTED]',
   },
 });
