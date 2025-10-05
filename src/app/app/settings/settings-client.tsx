@@ -29,6 +29,7 @@ import {
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import InviteUserDialog from './components/invite-user-dialog';
+import { RemoveUserDialog } from './components/remove-user-dialog';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/lib/user-profile-context';
 
@@ -68,6 +69,9 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
   const [editedOrgName, setEditedOrgName] = useState('');
   const [isSavingOrgName, setIsSavingOrgName] = useState(false);
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
+  const [removeUserDialogOpen, setRemoveUserDialogOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<User | null>(null);
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   // If not admin, show unauthorized message
   if (!isAdmin) {
@@ -300,6 +304,50 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
     }
   };
 
+  const handleOpenRemoveDialog = (user: User) => {
+    setUserToRemove(user);
+    setRemoveUserDialogOpen(true);
+  };
+
+  const handleConfirmRemoveUser = async () => {
+    if (!userToRemove) return;
+
+    setRemovingUserId(userToRemove.id);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error('Not authenticated');
+        return;
+      }
+
+      const response = await fetch(`/api/users/${userToRemove.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success('User removed successfully');
+        setRemoveUserDialogOpen(false);
+        setUserToRemove(null);
+        fetchUsers();
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to remove user');
+      }
+    } catch (error) {
+      console.error('Error removing user:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setRemovingUserId(null);
+    }
+  };
+
   // Fetch data on component mount
   useEffect(() => {
     fetchUsers();
@@ -411,13 +459,25 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {user.role === 'user' ? (
-                            <DropdownMenuItem
-                              onClick={() => handleChangeRole(user.id, 'admin')}
-                              disabled={!canChangeRole || changingRoleId === user.id}
-                            >
-                              <ShieldCheck className="h-4 w-4 mr-2" />
-                              Promote to Admin
-                            </DropdownMenuItem>
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => handleChangeRole(user.id, 'admin')}
+                                disabled={!canChangeRole || changingRoleId === user.id}
+                              >
+                                <ShieldCheck className="h-4 w-4 mr-2" />
+                                Promote to Admin
+                              </DropdownMenuItem>
+                              {!isCurrentUser && (
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenRemoveDialog(user)}
+                                  disabled={changingRoleId === user.id || removingUserId === user.id}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Remove User
+                                </DropdownMenuItem>
+                              )}
+                            </>
                           ) : (
                             <DropdownMenuItem
                               onClick={() => handleChangeRole(user.id, 'user')}
@@ -601,6 +661,17 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
         onOpenChange={setInviteDialogOpen}
         onInviteSent={handleInviteSent}
       />
+
+      {userToRemove && (
+        <RemoveUserDialog
+          open={removeUserDialogOpen}
+          onOpenChange={setRemoveUserDialogOpen}
+          onConfirm={handleConfirmRemoveUser}
+          userName={userToRemove.full_name}
+          userEmail={userToRemove.email}
+          isLoading={removingUserId === userToRemove.id}
+        />
+      )}
     </div>
   );
 }
