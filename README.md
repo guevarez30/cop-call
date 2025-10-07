@@ -1,6 +1,6 @@
 # MicroSaaS Template
 
-A mobile-responsive multi-tenant SaaS application template built with Next.js 15, Supabase, and Tailwind CSS.
+A mobile-responsive multi-tenant SaaS application template built with Next.js 15, Supabase, and Tailwind CSS..
 
 ## Features
 
