@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = context;
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+): Promise<Response> {
+  const { id } = await context.params; // ✅ must await because params is a Promise in Next 15
+
   try {
     const supabase = await createClient();
 
@@ -24,12 +28,10 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const invitationId = params.id;
-
     const { data: invitation } = await supabase
       .from('invitations')
       .select('*')
-      .eq('id', invitationId)
+      .eq('id', id)
       .eq('organization_id', profile.organization_id)
       .single();
 
@@ -40,17 +42,17 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
     const { error: deleteError } = await supabase
       .from('invitations')
       .delete()
-      .eq('id', invitationId);
+      .eq('id', id);
 
     if (deleteError) {
       console.error('Error deleting invitation:', deleteError);
       return NextResponse.json({ error: 'Failed to revoke invitation' }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Invitation revoked successfully',
-    });
+    return NextResponse.json(
+      { success: true, message: 'Invitation revoked successfully' },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('Delete invitation error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

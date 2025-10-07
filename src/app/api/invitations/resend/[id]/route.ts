@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const supabaseAdmin = createAdminClient();
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const invitationId = params.id;
+    const { id: invitationId } = await params;
 
     // Fetch invitation and verify it belongs to admin's organization
     const { data: invitation } = await supabase

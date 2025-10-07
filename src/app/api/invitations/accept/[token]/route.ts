@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
     const supabaseAdmin = createAdminClient();
-    const token = params.token;
+    const { token } = await params;
 
     // Fetch invitation by token using admin client (bypasses RLS)
     const { data: invitation, error: invitationError } = await supabaseAdmin
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: { token: s
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { token: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
     const supabase = await createClient();
     const supabaseAdmin = createAdminClient();
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = params.token;
+    const { token } = await params;
 
     // Fetch invitation by token using admin client (bypasses RLS)
     const { data: invitation, error: invitationError } = await supabaseAdmin
