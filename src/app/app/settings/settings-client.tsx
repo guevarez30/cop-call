@@ -73,25 +73,6 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
   const [userToRemove, setUserToRemove] = useState<User | null>(null);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
-  // If not admin, show unauthorized message
-  if (!isAdmin) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-medium">Admin Access Required</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                You need administrator privileges to access organization settings.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
@@ -350,9 +331,11 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchUsers();
-    fetchInvitations();
-  }, []);
+    if (isAdmin) {
+      fetchUsers();
+      fetchInvitations();
+    }
+  }, [isAdmin]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -369,6 +352,25 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  // If not admin, show unauthorized message
+  if (!isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-medium">Admin Access Required</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                You need administrator privileges to access organization settings.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -506,7 +508,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
             <CardTitle className="text-xl">Pending Invitations</CardTitle>
           </div>
           <CardDescription className="text-base">
-            Users who have been invited but haven't joined yet
+            Users who have been invited but haven&apos;t joined yet
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -589,7 +591,7 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
         <CardHeader>
           <CardTitle className="text-xl">Organization Details</CardTitle>
           <CardDescription className="text-base">
-            Manage your organization's information
+            Manage your organization&apos;s information
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

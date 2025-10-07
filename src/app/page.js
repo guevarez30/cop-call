@@ -110,30 +110,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-8 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              © 2025 MicroSaaS. All rights reserved.
-            </div>
-            <div className="flex gap-6">
-              <Link
-                href="/privacy"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Terms
-              </Link>
-              <Link
-                href="/contact"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Contact
-              </Link>
-            </div>
+          <div className="text-center text-sm text-muted-foreground">
+            © 2025 MicroSaaS. All rights reserved.
           </div>
         </div>
       </footer>

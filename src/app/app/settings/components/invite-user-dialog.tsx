@@ -87,7 +87,7 @@ export default function InviteUserDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">Invite Team Member</DialogTitle>
           <DialogDescription className="text-base">
-            Send an invitation to join your organization. They'll receive an email with instructions
+            Send an invitation to join your organization. They&apos;ll receive an email with instructions
             to get started.
           </DialogDescription>
         </DialogHeader>

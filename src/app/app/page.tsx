@@ -58,7 +58,7 @@ function AdminDashboard() {
         <CardHeader>
           <CardTitle className="text-xl">Recent Activity</CardTitle>
           <CardDescription className="text-base">
-            What's happening in your organization
+            What&apos;s happening in your organization
           </CardDescription>
         </CardHeader>
         <CardContent>

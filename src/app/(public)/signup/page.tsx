@@ -80,7 +80,7 @@ export default function SignUpPage() {
               className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg text-sm"
               role="status"
             >
-              We've sent a verification email to <strong>{formData.email}</strong>. Please check
+              We&apos;ve sent a verification email to <strong>{formData.email}</strong>. Please check
               your inbox and click the verification link before logging in.
             </div>
             <p className="text-sm text-muted-foreground">
