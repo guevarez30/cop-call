@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
+  const { params } = context;
   try {
     const supabase = await createClient();
 
-    // Verify user is authenticated
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -14,8 +14,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch user profile and verify admin role
-    const { data: profile } = await supabase.from('users').select('*').eq('id', user.id).single();
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
     if (!profile || profile.role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
@@ -23,7 +26,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     const invitationId = params.id;
 
-    // Verify invitation belongs to admin's organization
     const { data: invitation } = await supabase
       .from('invitations')
       .select('*')
@@ -35,7 +37,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
     }
 
-    // Delete the invitation (or update status to 'expired')
     const { error: deleteError } = await supabase
       .from('invitations')
       .delete()
@@ -55,3 +56,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
