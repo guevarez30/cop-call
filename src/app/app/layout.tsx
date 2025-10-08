@@ -46,7 +46,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean; setIsC
             isCollapsed && 'hidden'
           )}
         >
-          MicroSaaS
+          Event Logger
         </Link>
         <Button
           variant="ghost"
@@ -203,7 +203,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                   href="/app"
                   className="text-xl font-bold hover:text-primary transition-colors md:hidden"
                 >
-                  MicroSaaS
+                  Event Logger
                 </Link>
               </div>
 

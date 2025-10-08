@@ -2,6 +2,16 @@
 
 This document outlines the core design principles that guide all UX and UI decisions in this project. These principles are derived from industry-leading design systems and best practices, adapted for our specific tech stack and use cases.
 
+## Visual Design Examples
+
+Reference design examples are available in `.claude/design-examples/`:
+
+- `list-example.png` - Example of list/table layout patterns
+- `account-theme.png` - Account settings page theme and styling
+- `general-theme.png` - General application theme and visual design
+
+These examples serve as visual references for maintaining design consistency across the application.
+
 ---
 
 ## Core Design Values

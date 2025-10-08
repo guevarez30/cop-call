@@ -1,28 +1,49 @@
-# MicroSaaS Template
+# Cop Event Logger
 
-A mobile-responsive multi-tenant SaaS application template built with Next.js 15, Supabase, and Tailwind CSS..
+A mobile-first event logging application for law enforcement officers to record daily activities in real-time, with admin oversight capabilities for department-wide data management.
 
 ## Features
 
-### ✅ Completed
+### ✅ Foundation Complete
 
-- [x] User Registration (Sign up with email/password)
-- [x] User Login (Sign in with email/password)
-- [x] First-Time User Onboarding (Organization setup)
-- [x] User Profile (View and edit profile information)
-- [x] Theme Controls (Light/Dark mode toggle with persistence)
-- [x] Change Password (Update account password)
-- [x] Password Reset (Forgot password flow)
-- [x] Invite Users (Send email invitations - Admin only)
-- [x] Accept Invitations (Join organization via invitation link)
-- [x] Manage Invitations (Resend/revoke pending invites - Admin only)
-- [x] Organization Settings (Edit organization name - Admin only)
-- [x] Two-factor authentication
-- [x] Deactivate Users (Admin permission required)
+- [x] User authentication (Signup, Login, Password Reset)
+- [x] Multi-tenant organization support
+- [x] Role-based access control (Officer/Admin)
+- [x] User invitations and onboarding
+- [x] User profile management
+- [x] Theme controls (Light/Dark mode)
 
-### 🚧 In Progress / Planned
-- [ ] Upload avatar image
-- [ ] Stripe integration
+### 🚧 Phase 1: Event Logging (In Development)
+
+- [ ] **Event Creation UI** (Mobile-optimized)
+  - "Log Event" button (auto-captures start time)
+  - Auto-populated officer info
+  - Multi-select tag interface
+  - Notes text area
+  - Involved parties text field
+  - Photo upload/camera capture (unlimited)
+  - End time selector
+  - Draft and Submit workflow
+
+- [ ] **Officer Dashboard**
+  - "Log New Event" prominent button
+  - Drafts section (editable events)
+  - Today's submitted events list
+  - Event cards with time duration, tags, notes preview
+  - Filter: Today/Week/Month view
+
+- [ ] **Event Detail/Edit View**
+  - Full event information display
+  - Edit capability for draft events
+  - Visual status indicators (Draft vs Submitted)
+
+### 📋 Phase 2: Admin Dashboard (Planned)
+
+- [ ] Department-wide event feed (all officers)
+- [ ] Search and filter interface (by officer, date, tags)
+- [ ] Event analytics and reports
+- [ ] Officer management
+- [ ] Tag management (create, edit, archive tags)
 
 ## Tech Stack
 
@@ -286,36 +307,56 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The application supports two user roles:
 
-### Admin
+### Officer (Standard User)
 
-- Full access to all features
-- Access to organization settings page (`/app/settings`)
-- Can invite new users to the organization
-- Can manage pending invitations (resend, revoke)
-- Can view all organization members
-- Can edit organization name
-- View organization-wide data
+- **Primary Device**: Mobile (in-car or personal device)
+- **Primary Use**: Quick event logging during shift
+- **Capabilities**:
+  - Log new events with tags, notes, photos, and time tracking
+  - View and edit draft events (not yet submitted)
+  - View own submitted events (read-only)
+  - Access personal dashboard showing today's events
+  - Filter events by date range
+- **Restrictions**:
+  - Cannot delete events
+  - Cannot edit submitted events
+  - Cannot view other officers' events
+  - Cannot access admin dashboard or settings
 
-### User
+### Admin Officer
 
-- Standard application access
-- Can view and manage own data
-- Cannot access admin-only features
-- Cannot access organization settings page
+- **Primary Device**: Desktop/Tablet (can be mobile)
+- **Primary Use**: Department oversight and reporting
+- **Capabilities**:
+  - All officer capabilities
+  - View department-wide event feed (all officers)
+  - Search and filter all events
+  - Edit and delete any event (including submitted events)
+  - Generate reports and analytics
+  - Manage officers and invitations
+  - Create and manage event tags
+  - Access organization settings (`/app/settings`)
 
 ## Database Schema
 
 The application uses the following core tables:
 
-### Tables
-- **organizations** - Multi-tenant organizations
+### Current Tables
+- **organizations** - Multi-tenant organizations (departments)
   - `id`, `name`, `created_at`, `updated_at`
 
-- **users** - Application users (linked to Supabase Auth)
+- **users** - Application users (officers)
   - `id`, `email`, `full_name`, `role` (admin/user), `organization_id`, `theme` (light/dark), `created_at`, `updated_at`
 
 - **invitations** - Pending organization invitations
   - `id`, `organization_id`, `email`, `role`, `token`, `status` (pending/accepted/expired), `invited_by_user_id`, `expires_at`, `created_at`, `updated_at`
+
+### Future Tables (UI-First Development)
+Event data models will be added after UI workflows are validated:
+- **events** - Event records (officer activities)
+- **event_tags** - Tag definitions (managed by admins)
+- **event_tag_assignments** - Many-to-many relationship between events and tags
+- **event_photos** - Photo attachments for events
 
 ### Key Features
 - **Row Level Security (RLS)** enabled on all tables
@@ -385,13 +426,24 @@ All API endpoints (except public auth endpoints) require authentication via Bear
 #### Invitation Acceptance (Public)
 - `POST /api/invitations/accept/[token]` - Accept invitation and join organization
 
-### Adding New Features
+### Development Approach
+
+**UI-First Philosophy**: Build features with UI and mock data first, then add persistence later.
 
 1. Read `CLAUDE.md` for development guidelines
-2. Create database migrations in `supabase/migrations/`
-3. Add API routes in `src/app/api/`
-4. Build UI components in `src/app/app/`
-5. Use shadcn/ui for consistent styling
+2. Build UI components in `src/app/app/` with mock data
+3. Validate workflows and user experience
+4. Create TypeScript types for data models
+5. Add database migrations in `supabase/migrations/`
+6. Create API routes in `src/app/api/`
+7. Connect UI to database
+
+**Key Principles**:
+- Mobile-first responsive design
+- Large touch targets (minimum 44x44px)
+- Minimal text input requirements
+- Quick actions within 2 taps
+- Empty states with helpful guidance
 
 ### Running Tests
 
@@ -451,13 +503,11 @@ Make sure to set the same environment variables in your production environment.
 - Review `CLAUDE.md` for architecture details
 - Check browser console (F12) for errors
 
-## Contributing
+## Project Documentation
 
-This is a template project. Feel free to:
-
-- Fork and customize for your needs
-- Submit issues for bugs
-- Suggest new features
+For detailed project specifications and roadmap, see:
+- **`.claude/project-definition.md`** - Complete project vision, feature roadmap, and design decisions
+- **`CLAUDE.md`** - Technical architecture and development guidelines
 
 ## License
 
