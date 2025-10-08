@@ -2,14 +2,15 @@ import { Event } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDuration, getEventDuration } from '@/lib/mock-data';
-import { Clock, FileText } from 'lucide-react';
+import { Clock, FileText, User } from 'lucide-react';
 
 interface EventCardProps {
   event: Event;
   onClick?: () => void;
+  showOfficer?: boolean;
 }
 
-export function EventCard({ event, onClick }: EventCardProps) {
+export function EventCard({ event, onClick, showOfficer = false }: EventCardProps) {
   const duration = getEventDuration(event);
   const durationText = formatDuration(duration);
   const startTime = new Date(event.start_time).toLocaleTimeString('en-US', {
@@ -42,6 +43,14 @@ export function EventCard({ event, onClick }: EventCardProps) {
             {event.status === 'draft' ? 'Draft' : 'Submitted'}
           </Badge>
         </div>
+
+        {/* Officer Name (for admin view) */}
+        {showOfficer && (
+          <div className="flex items-center gap-2 mb-3 text-sm">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">{event.officer_name}</span>
+          </div>
+        )}
 
         {/* Tags */}
         {event.tags.length > 0 && (

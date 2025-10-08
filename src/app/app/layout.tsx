@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { Menu, Home, Settings, User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Menu, Home, Settings, User, LogOut, ChevronLeft, ChevronRight, History } from 'lucide-react';
 import { RoleProvider, useRole } from '@/lib/role-context';
 import { UserProfileProvider, useUserProfile } from '@/lib/user-profile-context';
 import { createClient } from '@/lib/supabase/client';
@@ -22,13 +22,21 @@ import { ThemeSync } from '@/components/theme-sync';
 import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
-function NavigationItems() {
-  return [{ name: 'Dashboard', href: '/app', icon: Home }];
+function NavigationItems(isAdmin: boolean) {
+  const items = [{ name: 'Dashboard', href: '/app', icon: Home }];
+
+  if (isAdmin) {
+    items.push({ name: 'History', href: '/app/history', icon: History });
+    items.push({ name: 'Department Settings', href: '/app/settings', icon: Settings });
+  }
+
+  return items;
 }
 
 function Sidebar({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean; setIsCollapsed: (collapsed: boolean) => void }) {
   const pathname = usePathname();
-  const navigationItems = NavigationItems();
+  const { isAdmin } = useRole();
+  const navigationItems = NavigationItems(isAdmin);
 
   return (
     <aside
@@ -117,7 +125,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { profile, loading: profileLoading } = useUserProfile();
   const { isAdmin } = useRole();
-  const navigationItems = NavigationItems();
+  const navigationItems = NavigationItems(isAdmin);
 
   // Load sidebar collapse state from localStorage
   useEffect(() => {
@@ -248,14 +256,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/app/settings" className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Settings
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="cursor-pointer text-destructive"
