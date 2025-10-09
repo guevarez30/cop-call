@@ -20,6 +20,7 @@ import {
   Pencil,
   Check,
   X,
+  BadgeCheck,
 } from 'lucide-react';
 import { useUserProfile } from '@/lib/user-profile-context';
 import { useTheme } from '@/lib/theme-context';
@@ -34,6 +35,9 @@ export default function ProfilePage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
+  const [isEditingBadgeNo, setIsEditingBadgeNo] = useState(false);
+  const [editedBadgeNo, setEditedBadgeNo] = useState('');
+  const [isSavingBadgeNo, setIsSavingBadgeNo] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
 
   // MFA state
@@ -113,6 +117,29 @@ export default function ProfilePage() {
   const handleCancelEdit = () => {
     setIsEditingName(false);
     setEditedName('');
+  };
+
+  // Handle badge number edit
+  const handleEditBadgeNo = () => {
+    setEditedBadgeNo(profile?.badge_no || '');
+    setIsEditingBadgeNo(true);
+  };
+
+  const handleSaveBadgeNo = async () => {
+    try {
+      setIsSavingBadgeNo(true);
+      await updateProfile({ badge_no: editedBadgeNo.trim() || null });
+      setIsEditingBadgeNo(false);
+    } catch (error) {
+      console.error('Failed to save badge number:', error);
+    } finally {
+      setIsSavingBadgeNo(false);
+    }
+  };
+
+  const handleCancelBadgeEdit = () => {
+    setIsEditingBadgeNo(false);
+    setEditedBadgeNo('');
   };
 
   // Refresh MFA status
@@ -274,6 +301,60 @@ export default function ProfilePage() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Email</p>
               <p className="text-base break-words">{profile.email}</p>
+            </div>
+          </div>
+          <Separator />
+          <div className="flex items-start gap-4">
+            <BadgeCheck className="h-5 w-5 text-muted-foreground mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-muted-foreground">Badge Number</p>
+              {isEditingBadgeNo ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <Input
+                    value={editedBadgeNo}
+                    onChange={(e) => setEditedBadgeNo(e.target.value)}
+                    placeholder="Enter badge number"
+                    className="text-base h-10"
+                    disabled={isSavingBadgeNo}
+                    autoFocus
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleSaveBadgeNo}
+                    disabled={isSavingBadgeNo}
+                    className="h-10 w-10 shrink-0 transition-colors"
+                    aria-label="Save badge number"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleCancelBadgeEdit}
+                    disabled={isSavingBadgeNo}
+                    className="h-10 w-10 shrink-0 transition-colors"
+                    aria-label="Cancel editing"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-base break-words">
+                    {profile.badge_no || 'Not set'}
+                  </p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleEditBadgeNo}
+                    className="h-10 w-10 shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                    aria-label="Edit badge number"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

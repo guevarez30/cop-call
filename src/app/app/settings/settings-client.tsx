@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +31,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import InviteUserDialog from './components/invite-user-dialog';
 import { RemoveUserDialog } from './components/remove-user-dialog';
+import { TagList } from './components/tag-list';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/lib/user-profile-context';
 
@@ -378,8 +380,15 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
         <h1 className="text-3xl font-bold tracking-tight">Organization Settings</h1>
       </div>
 
-      {/* Team Members */}
-      <Card>
+      <Tabs defaultValue="team" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="department">Department</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="team" className="mt-6 space-y-6">
+          {/* Team Members */}
+          <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -657,6 +666,12 @@ export default function SettingsClient({ isAdmin }: SettingsClientProps) {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="department" className="mt-6 space-y-6">
+          <TagList />
+        </TabsContent>
+      </Tabs>
 
       <InviteUserDialog
         open={inviteDialogOpen}

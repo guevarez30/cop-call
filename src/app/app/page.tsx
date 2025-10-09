@@ -1,44 +1,157 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MOCK_EVENTS, getTodaysEvents, getEventsByStatus } from '@/lib/mock-data';
+import { getTodaysEvents, getEventsByStatus } from '@/lib/mock-data';
 import { EventCard } from './components/event-card';
 import { EventForm } from './components/event-form';
-import { Plus } from 'lucide-react';
+import { EventDetailDialog } from './components/event-detail-dialog';
+import { DeleteEventDialog } from './components/delete-event-dialog';
+import { Plus, Loader2 } from 'lucide-react';
 import { useRole } from '@/lib/role-context';
 import { useUserProfile } from '@/lib/user-profile-context';
 import { Event } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
 
 function AdminDashboard() {
   const [formOpen, setFormOpen] = useState(false);
-  const [events, setEvents] = useState<Event[]>(MOCK_EVENTS);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const { profile } = useUserProfile();
+
+  // Fetch events from API
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch('/api/events', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data.events || []);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Admin sees ALL events from all officers
   const todaysEvents = getTodaysEvents(events);
   const drafts = getEventsByStatus(todaysEvents, 'draft');
   const submitted = getEventsByStatus(todaysEvents, 'submitted');
 
-  const handleSaveEvent = (eventData: Partial<Event>, status: 'draft' | 'submitted') => {
-    const newEvent: Event = {
-      id: `event-${Date.now()}`,
-      officer_id: 'admin-1', // Admin creating event uses admin ID
-      officer_name: 'Admin User', // In real app, get from user profile
-      start_time: eventData.start_time!,
-      end_time: eventData.end_time || null,
-      tags: eventData.tags || [],
-      notes: eventData.notes || '',
-      involved_parties: eventData.involved_parties || null,
-      photos: [],
-      status,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      organization_id: 'org-1', // In real app, get from user profile
-    };
+  const handleSaveEvent = async (eventData: any) => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
 
-    setEvents(prev => [newEvent, ...prev]);
+      if (!session) return;
+
+      if (editingEvent) {
+        // Update existing event
+        const response = await fetch(`/api/events/${editingEvent.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(prev => prev.map(e => e.id === editingEvent.id ? data.event : e));
+          setEditingEvent(null);
+        }
+      } else {
+        // Create new event
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(prev => [data.event, ...prev]);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving event:', error);
+    }
   };
+
+  const handleEditDraft = (event: Event) => {
+    setEditingEvent(event);
+    setFormOpen(true);
+  };
+
+  const handleViewEvent = (event: Event) => {
+    setViewingEvent(event);
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!deletingEvent) return;
+
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch(`/api/events/${deletingEvent.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        setEvents(prev => prev.filter(e => e.id !== deletingEvent.id));
+        setDeletingEvent(null);
+        setViewingEvent(null);
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setEditingEvent(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -61,8 +174,9 @@ function AdminDashboard() {
       {/* Event Form */}
       <EventForm
         open={formOpen}
-        onCancel={() => setFormOpen(false)}
+        onCancel={handleCloseForm}
         onSave={handleSaveEvent}
+        editEvent={editingEvent}
       />
 
       {/* Drafts Section */}
@@ -74,7 +188,7 @@ function AdminDashboard() {
           </div>
           <div className="space-y-3">
             {drafts.map((event) => (
-              <EventCard key={event.id} event={event} showOfficer={true} />
+              <EventCard key={event.id} event={event} showOfficer={true} onClick={() => handleEditDraft(event)} />
             ))}
           </div>
         </div>
@@ -90,7 +204,7 @@ function AdminDashboard() {
         {submitted.length > 0 ? (
           <div className="space-y-3">
             {submitted.map((event) => (
-              <EventCard key={event.id} event={event} showOfficer={true} />
+              <EventCard key={event.id} event={event} showOfficer={true} onClick={() => handleViewEvent(event)} />
             ))}
           </div>
         ) : (
@@ -108,40 +222,170 @@ function AdminDashboard() {
           </Card>
         )}
       </div>
+
+      {/* Event Detail Dialog */}
+      <EventDetailDialog
+        event={viewingEvent}
+        open={!!viewingEvent}
+        onClose={() => setViewingEvent(null)}
+        onEdit={handleEditDraft}
+        onDelete={(event) => setDeletingEvent(event)}
+        showOfficer={true}
+        isAdmin={true}
+        canEdit={true}
+        canDelete={true}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteEventDialog
+        open={!!deletingEvent}
+        onClose={() => setDeletingEvent(null)}
+        onConfirm={handleDeleteEvent}
+        eventStatus={deletingEvent?.status || 'draft'}
+        isAdmin={true}
+        deleting={deleting}
+      />
     </div>
   );
 }
 
 function UserDashboard({ userId }: { userId: string }) {
   const [formOpen, setFormOpen] = useState(false);
-  const [events, setEvents] = useState<Event[]>(MOCK_EVENTS);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const { profile } = useUserProfile();
 
-  // Get events for this officer only (in real app, filter by userId)
-  // For now using mock data - showing officer-1's events as example
-  const userEvents = events.filter(event => event.officer_id === 'officer-1');
-  const todaysEvents = getTodaysEvents(userEvents);
+  // Fetch events from API
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch('/api/events', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data.events || []);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const todaysEvents = getTodaysEvents(events);
   const drafts = getEventsByStatus(todaysEvents, 'draft');
   const submitted = getEventsByStatus(todaysEvents, 'submitted');
 
-  const handleSaveEvent = (eventData: Partial<Event>, status: 'draft' | 'submitted') => {
-    const newEvent: Event = {
-      id: `event-${Date.now()}`,
-      officer_id: 'officer-1', // In real app, use actual userId
-      officer_name: 'Officer Smith', // In real app, get from user profile
-      start_time: eventData.start_time!,
-      end_time: eventData.end_time || null,
-      tags: eventData.tags || [],
-      notes: eventData.notes || '',
-      involved_parties: eventData.involved_parties || null,
-      photos: [],
-      status,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      organization_id: 'org-1', // In real app, get from user profile
-    };
+  const handleSaveEvent = async (eventData: any) => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
 
-    setEvents(prev => [newEvent, ...prev]);
+      if (!session) return;
+
+      if (editingEvent) {
+        // Update existing event
+        const response = await fetch(`/api/events/${editingEvent.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(prev => prev.map(e => e.id === editingEvent.id ? data.event : e));
+          setEditingEvent(null);
+        }
+      } else {
+        // Create new event
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(prev => [data.event, ...prev]);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving event:', error);
+    }
   };
+
+  const handleEditDraft = (event: Event) => {
+    setEditingEvent(event);
+    setFormOpen(true);
+  };
+
+  const handleViewEvent = (event: Event) => {
+    setViewingEvent(event);
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!deletingEvent) return;
+
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch(`/api/events/${deletingEvent.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        setEvents(prev => prev.filter(e => e.id !== deletingEvent.id));
+        setDeletingEvent(null);
+        setViewingEvent(null);
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setEditingEvent(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -164,8 +408,9 @@ function UserDashboard({ userId }: { userId: string }) {
       {/* Event Form */}
       <EventForm
         open={formOpen}
-        onCancel={() => setFormOpen(false)}
+        onCancel={handleCloseForm}
         onSave={handleSaveEvent}
+        editEvent={editingEvent}
       />
 
       {/* Drafts Section */}
@@ -177,7 +422,7 @@ function UserDashboard({ userId }: { userId: string }) {
           </div>
           <div className="space-y-3">
             {drafts.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} onClick={() => handleEditDraft(event)} />
             ))}
           </div>
         </div>
@@ -193,7 +438,7 @@ function UserDashboard({ userId }: { userId: string }) {
         {submitted.length > 0 ? (
           <div className="space-y-3">
             {submitted.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} onClick={() => handleViewEvent(event)} />
             ))}
           </div>
         ) : (
@@ -211,6 +456,29 @@ function UserDashboard({ userId }: { userId: string }) {
           </Card>
         )}
       </div>
+
+      {/* Event Detail Dialog */}
+      <EventDetailDialog
+        event={viewingEvent}
+        open={!!viewingEvent}
+        onClose={() => setViewingEvent(null)}
+        onEdit={handleEditDraft}
+        onDelete={(event) => setDeletingEvent(event)}
+        showOfficer={false}
+        isAdmin={false}
+        canEdit={true}
+        canDelete={viewingEvent?.status === 'draft'}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteEventDialog
+        open={!!deletingEvent}
+        onClose={() => setDeletingEvent(null)}
+        onConfirm={handleDeleteEvent}
+        eventStatus={deletingEvent?.status || 'draft'}
+        isAdmin={false}
+        deleting={deleting}
+      />
     </div>
   );
 }

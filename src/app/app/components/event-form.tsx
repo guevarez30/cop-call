@@ -1,25 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MOCK_EVENT_TAGS } from '@/lib/mock-data';
-import { Event } from '@/lib/types';
-import { X, Image as ImageIcon } from 'lucide-react';
+import { Event, Tag } from '@/lib/types';
+import { X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { TagBadge } from '@/components/tag-badge';
+
+interface EventFormData {
+  start_time: string;
+  end_time: string | null;
+  tag_ids: string[];
+  notes: string;
+  involved_parties: string | null;
+  status: 'draft' | 'submitted';
+}
 
 interface EventFormProps {
   open: boolean;
   onCancel: () => void;
-  onSave: (event: Partial<Event>, status: 'draft' | 'submitted') => void;
+  onSave: (event: EventFormData, status: 'draft' | 'submitted') => Promise<void>;
   editEvent?: Event | null;
 }
 
 export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps) {
-  const [selectedTags, setSelectedTags] = useState<string[]>(editEvent?.tags || []);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(editEvent?.tags || []);
   const [tagSearch, setTagSearch] = useState('');
   const [notes, setNotes] = useState(editEvent?.notes || '');
   const [involvedParties, setInvolvedParties] = useState(editEvent?.involved_parties || '');
@@ -34,19 +44,85 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
       : ''
   );
   const [photos, setPhotos] = useState<File[]>([]);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [loadingTags, setLoadingTags] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch tags from API
+  useEffect(() => {
+    const fetchTags = async () => {
+      setLoadingTags(true);
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) return;
+
+        const response = await fetch('/api/tags/list', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableTags(data.tags || []);
+        }
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      } finally {
+        setLoadingTags(false);
+      }
+    };
+
+    if (open) {
+      fetchTags();
+    }
+  }, [open]);
+
+  // Update form state when editEvent changes
+  useEffect(() => {
+    if (editEvent) {
+      setSelectedTags(editEvent.tags || []);
+      setNotes(editEvent.notes || '');
+      setInvolvedParties(editEvent.involved_parties || '');
+      setStartTime(
+        editEvent.start_time
+          ? new Date(editEvent.start_time).toISOString().slice(0, 16)
+          : new Date().toISOString().slice(0, 16)
+      );
+      setEndTime(
+        editEvent.end_time
+          ? new Date(editEvent.end_time).toISOString().slice(0, 16)
+          : ''
+      );
+      // Note: photos can't be pre-populated from URLs, would need special handling
+    } else {
+      // Reset form for new event
+      setSelectedTags([]);
+      setNotes('');
+      setInvolvedParties('');
+      setStartTime(new Date().toISOString().slice(0, 16));
+      setEndTime('');
+      setPhotos([]);
+    }
+    setTagSearch('');
+  }, [editEvent]);
 
   // Filter tags based on search
-  const filteredTags = MOCK_EVENT_TAGS.filter((tag) =>
-    tag.toLowerCase().includes(tagSearch.toLowerCase())
-  ).filter((tag) => !selectedTags.includes(tag)); // Don't show already selected tags
+  const filteredTags = availableTags
+    .filter((tag) => tag.name.toLowerCase().includes(tagSearch.toLowerCase()))
+    .filter((tag) => !selectedTags.some(st => st.id === tag.id)); // Don't show already selected tags
 
-  const addTag = (tag: string) => {
+  const addTag = (tag: Tag) => {
     setSelectedTags((prev) => [...prev, tag]);
     setTagSearch(''); // Clear search after adding
   };
 
-  const removeTag = (tag: string) => {
-    setSelectedTags((prev) => prev.filter((t) => t !== tag));
+  const removeTag = (tagId: string) => {
+    setSelectedTags((prev) => prev.filter((t) => t.id !== tagId));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,28 +135,25 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = (status: 'draft' | 'submitted') => {
-    const eventData: Partial<Event> = {
-      start_time: new Date(startTime).toISOString(),
-      end_time: endTime ? new Date(endTime).toISOString() : null,
-      tags: selectedTags,
-      notes,
-      involved_parties: involvedParties || null,
-      status,
-    };
+  const handleSave = async (status: 'draft' | 'submitted') => {
+    setSaving(true);
+    try {
+      const eventData: EventFormData = {
+        start_time: new Date(startTime).toISOString(),
+        end_time: endTime ? new Date(endTime).toISOString() : null,
+        tag_ids: selectedTags.map(t => t.id), // Convert Tag[] to tag IDs
+        notes,
+        involved_parties: involvedParties || null,
+        status,
+      };
 
-    onSave(eventData, status);
-
-    // Reset form
-    setSelectedTags([]);
-    setTagSearch('');
-    setNotes('');
-    setInvolvedParties('');
-    setStartTime(new Date().toISOString().slice(0, 16));
-    setEndTime('');
-    setPhotos([]);
-
-    onCancel();
+      await onSave(eventData, status);
+      onCancel(); // This will trigger form reset via useEffect
+    } catch (error) {
+      console.error('Error saving event:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (!open) return null;
@@ -137,15 +210,12 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             {selectedTags.length > 0 && (
               <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-md">
                 {selectedTags.map((tag) => (
-                  <div
-                    key={tag}
-                    className="flex items-center gap-1 px-2 py-1 bg-primary text-primary-foreground rounded-md text-sm"
-                  >
-                    <span>{tag}</span>
+                  <div key={tag.id} className="flex items-center gap-1">
+                    <TagBadge tag={tag} size="md" />
                     <button
                       type="button"
-                      onClick={() => removeTag(tag)}
-                      className="hover:bg-primary/80 rounded-sm p-0.5"
+                      onClick={() => removeTag(tag.id)}
+                      className="rounded-sm p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -158,31 +228,40 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             <div className="space-y-2">
               <Input
                 type="text"
-                placeholder="Search tags..."
+                placeholder={loadingTags ? "Loading tags..." : "Search tags..."}
                 value={tagSearch}
                 onChange={(e) => setTagSearch(e.target.value)}
                 className="h-10"
+                disabled={loadingTags}
               />
 
               {/* Filtered Tag Results */}
               {tagSearch && (
                 <div className="max-h-48 overflow-y-auto border rounded-md">
-                  {filteredTags.length > 0 ? (
+                  {loadingTags ? (
+                    <div className="p-3 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : availableTags.length === 0 ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">
+                      No tags available. Ask an admin to create tags in Settings.
+                    </div>
+                  ) : filteredTags.length > 0 ? (
                     <div className="p-1">
                       {filteredTags.map((tag) => (
                         <button
-                          key={tag}
+                          key={tag.id}
                           type="button"
                           onClick={() => addTag(tag)}
-                          className="w-full text-left px-3 py-2 hover:bg-accent rounded-sm text-sm transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-accent rounded-sm text-sm transition-colors flex items-center gap-2"
                         >
-                          {tag}
+                          <TagBadge tag={tag} size="sm" />
                         </button>
                       ))}
                     </div>
                   ) : (
                     <div className="p-3 text-sm text-muted-foreground text-center">
-                      No tags found
+                      No tags found matching &quot;{tagSearch}&quot;
                     </div>
                   )}
                 </div>
@@ -282,21 +361,37 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             <Button
               onClick={() => handleSave('submitted')}
               className="flex-1 h-10"
-              disabled={selectedTags.length === 0 || !notes.trim()}
+              disabled={selectedTags.length === 0 || !notes.trim() || saving}
             >
-              Submit Event
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Submit Event'
+              )}
             </Button>
             <Button
               onClick={() => handleSave('draft')}
               variant="outline"
               className="flex-1 h-10"
+              disabled={saving}
             >
-              Save as Draft
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save as Draft'
+              )}
             </Button>
             <Button
               onClick={onCancel}
               variant="ghost"
               className="sm:w-auto h-10"
+              disabled={saving}
             >
               Cancel
             </Button>

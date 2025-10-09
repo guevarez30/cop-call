@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDuration, getEventDuration } from '@/lib/mock-data';
 import { Clock, FileText, User } from 'lucide-react';
+import { TagBadge } from '@/components/tag-badge';
 
 interface EventCardProps {
   event: Event;
@@ -24,7 +25,7 @@ export function EventCard({ event, onClick, showOfficer = false }: EventCardProp
 
   return (
     <Card
-      className="transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
+      variant="interactive"
       onClick={onClick}
     >
       <CardContent className="p-4 sm:p-6">
@@ -56,13 +57,7 @@ export function EventCard({ event, onClick, showOfficer = false }: EventCardProp
         {event.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {event.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="outline"
-                className="text-xs font-normal"
-              >
-                {tag}
-              </Badge>
+              <TagBadge key={tag.id} tag={tag} size="sm" />
             ))}
           </div>
         )}

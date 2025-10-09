@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
         id,
         email,
         full_name,
+        badge_no,
         role,
         theme,
         created_at,
@@ -146,12 +147,12 @@ export async function PATCH(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { full_name, theme } = body;
+    const { full_name, badge_no, theme } = body;
 
-    userLogger.debug({ updates: { full_name, theme } }, 'Processing profile update');
+    userLogger.debug({ updates: { full_name, badge_no, theme } }, 'Processing profile update');
 
     // Validate inputs
-    const updates: { full_name?: string; theme?: string } = {};
+    const updates: { full_name?: string; badge_no?: string | null; theme?: string } = {};
 
     if (full_name !== undefined) {
       if (typeof full_name !== 'string' || full_name.trim().length === 0) {
@@ -161,6 +162,16 @@ export async function PATCH(request: NextRequest) {
         );
       }
       updates.full_name = full_name.trim();
+    }
+
+    if (badge_no !== undefined) {
+      if (badge_no === null || badge_no === '') {
+        updates.badge_no = null;
+      } else if (typeof badge_no !== 'string') {
+        return NextResponse.json({ error: 'Badge number must be a string' }, { status: 400 });
+      } else {
+        updates.badge_no = badge_no.trim();
+      }
     }
 
     if (theme !== undefined) {
@@ -188,6 +199,7 @@ export async function PATCH(request: NextRequest) {
         id,
         email,
         full_name,
+        badge_no,
         role,
         theme,
         created_at,

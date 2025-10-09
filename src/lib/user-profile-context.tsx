@@ -9,7 +9,11 @@ interface UserProfileContextType {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
-  updateProfile: (updates: { full_name?: string; theme?: 'light' | 'dark' }) => Promise<void>;
+  updateProfile: (updates: {
+    full_name?: string;
+    badge_no?: string | null;
+    theme?: 'light' | 'dark';
+  }) => Promise<void>;
 }
 
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
@@ -63,7 +67,11 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProfile = async (updates: { full_name?: string; theme?: 'light' | 'dark' }) => {
+  const updateProfile = async (updates: {
+    full_name?: string;
+    badge_no?: string | null;
+    theme?: 'light' | 'dark';
+  }) => {
     try {
       setError(null);
 

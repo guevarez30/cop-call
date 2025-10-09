@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRole } from '@/lib/role-context';
-import { MOCK_EVENTS } from '@/lib/mock-data';
 import { Event } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -17,12 +16,44 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDuration, getEventDuration } from '@/lib/mock-data';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { TagBadge } from '@/components/tag-badge';
 
 export default function HistoryPage() {
   const { isAdmin } = useRole();
-  const [events] = useState<Event[]>(MOCK_EVENTS);
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+
+  // Fetch events from API
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch('/api/events', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data.events || []);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Sort events by start_time (most recent first)
   const sortedEvents = useMemo(() => {
@@ -120,15 +151,9 @@ export default function HistoryPage() {
                   <TableRow>
                     <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={allSelected}
+                        checked={allSelected ? true : someSelected ? "indeterminate" : false}
                         onCheckedChange={handleSelectAll}
                         aria-label="Select all events"
-                        ref={(el) => {
-                          if (el) {
-                            // @ts-ignore - indeterminate is a valid property
-                            el.indeterminate = someSelected;
-                          }
-                        }}
                       />
                     </TableHead>
                     <TableHead>Officer</TableHead>
@@ -153,7 +178,7 @@ export default function HistoryPage() {
                     return (
                       <TableRow
                         key={event.id}
-                        className={selectedEvents.has(event.id) ? 'bg-muted/50' : ''}
+                        className={selectedEvents.has(event.id) ? 'bg-muted/50' : 'hover:bg-accent/50 transition-colors duration-150'}
                       >
                         <TableCell>
                           <Checkbox
@@ -171,13 +196,7 @@ export default function HistoryPage() {
                         <TableCell>
                           <div className="flex flex-wrap gap-1 max-w-[200px]">
                             {event.tags.slice(0, 2).map((tag) => (
-                              <Badge
-                                key={tag}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {tag}
-                              </Badge>
+                              <TagBadge key={tag.id} tag={tag} size="sm" />
                             ))}
                             {event.tags.length > 2 && (
                               <Badge variant="outline" className="text-xs">

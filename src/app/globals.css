@@ -14,9 +14,13 @@
   --color-popover: oklch(1 0 0);
   --color-popover-foreground: oklch(0.145 0 0);
 
-  /* Neutral Primary - Dark gray/charcoal */
-  --color-primary: oklch(0.2 0 0);
+  /* Purple/Indigo Primary - Vibrant brand color */
+  --color-primary: oklch(0.6 0.19 285);
   --color-primary-foreground: oklch(0.985 0 0);
+
+  /* Primary color variants for hover/active states */
+  --color-primary-hover: oklch(0.55 0.19 285);
+  --color-primary-active: oklch(0.5 0.19 285);
 
   /* Light gray for secondary/accents */
   --color-secondary: oklch(0.96 0 0);
@@ -25,16 +29,31 @@
   --color-muted: oklch(0.97 0 0);
   --color-muted-foreground: oklch(0.556 0 0);
 
-  /* Accent uses subtle gray */
+  /* Accent colors */
   --color-accent: oklch(0.96 0 0);
   --color-accent-foreground: oklch(0.145 0 0);
 
+  /* Bright yellow for highlights and focus states */
+  --color-accent-yellow: oklch(0.9 0.2 95);
+  --color-accent-yellow-foreground: oklch(0.145 0 0);
+
+  /* Blue accent */
+  --color-accent-blue: oklch(0.6 0.25 235);
+  --color-accent-blue-foreground: oklch(0.985 0 0);
+
+  /* Destructive red */
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.985 0 0);
+  --color-destructive-hover: oklch(0.54 0.245 27.325);
+  --color-destructive-active: oklch(0.5 0.245 27.325);
+
+  /* Success green */
+  --color-success: oklch(0.55 0.17 145);
+  --color-success-foreground: oklch(0.985 0 0);
 
   --color-border: oklch(0.922 0 0);
   --color-input: oklch(0.922 0 0);
-  --color-ring: oklch(0.708 0 0);
+  --color-ring: oklch(0.6 0.19 285);
 
   --radius-sm: calc(0.625rem - 4px);
   --radius-md: calc(0.625rem - 2px);
@@ -56,7 +75,7 @@
 }
 
 :root.dark {
-  /* Dark mode */
+  /* Dark mode - Deep dark background */
   --color-background: oklch(0.145 0 0);
   --color-foreground: oklch(0.985 0 0);
 
@@ -66,9 +85,13 @@
   --color-popover: oklch(0.18 0 0);
   --color-popover-foreground: oklch(0.985 0 0);
 
-  /* Light gray for dark mode primary */
-  --color-primary: oklch(0.85 0 0);
+  /* Lighter purple/indigo for dark mode contrast */
+  --color-primary: oklch(0.7 0.19 285);
   --color-primary-foreground: oklch(0.145 0 0);
+
+  /* Primary variants for dark mode */
+  --color-primary-hover: oklch(0.65 0.19 285);
+  --color-primary-active: oklch(0.6 0.19 285);
 
   /* Dark gray backgrounds for dark mode */
   --color-secondary: oklch(0.22 0 0);
@@ -81,11 +104,26 @@
   --color-accent: oklch(0.22 0 0);
   --color-accent-foreground: oklch(0.985 0 0);
 
+  /* Accent colors for dark mode */
+  --color-accent-yellow: oklch(0.85 0.18 95);
+  --color-accent-yellow-foreground: oklch(0.145 0 0);
+
+  --color-accent-blue: oklch(0.65 0.22 235);
+  --color-accent-blue-foreground: oklch(0.985 0 0);
+
+  /* Destructive red for dark mode */
   --color-destructive: oklch(0.704 0.191 22.216);
+  --color-destructive-foreground: oklch(0.985 0 0);
+  --color-destructive-hover: oklch(0.67 0.191 22.216);
+  --color-destructive-active: oklch(0.63 0.191 22.216);
+
+  /* Success green for dark mode */
+  --color-success: oklch(0.65 0.16 145);
+  --color-success-foreground: oklch(0.145 0 0);
 
   --color-border: oklch(0.25 0 0);
   --color-input: oklch(0.25 0 0);
-  --color-ring: oklch(0.556 0 0);
+  --color-ring: oklch(0.7 0.19 285);
 }
 
 @layer base {

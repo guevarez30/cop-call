@@ -4,7 +4,7 @@ This document outlines the core design principles that guide all UX and UI decis
 
 ## Visual Design Examples
 
-Reference design examples are available in `.claude/design-examples/`:
+Reference design examples are available in `examples/`:
 
 - `list-example.png` - Example of list/table layout patterns
 - `account-theme.png` - Account settings page theme and styling

@@ -80,10 +80,10 @@ function Sidebar({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean; setIsC
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-accent text-muted-foreground hover:text-foreground',
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'hover:bg-accent text-muted-foreground hover:text-foreground hover:shadow-sm',
                 isCollapsed && 'justify-center'
               )}
               title={isCollapsed ? item.name : undefined}
@@ -195,7 +195,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             key={item.name}
                             href={item.href}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 text-base font-medium hover:bg-accent rounded-lg transition-colors"
+                            className="flex items-center gap-3 px-4 py-3 text-base font-medium hover:bg-accent rounded-lg transition-all duration-150 hover:shadow-sm"
                           >
                             <Icon className="h-5 w-5" />
                             {item.name}
