@@ -98,25 +98,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean; setIsC
   );
 }
 
-function RoleToggle() {
-  const { role, setRole, isDevelopment } = useRole();
-
-  if (!isDevelopment) return null;
-
-  return (
-    <div className="flex items-center gap-2 bg-accent px-3 py-1 rounded-md border border-border">
-      <span className="text-xs font-medium text-muted-foreground">Dev:</span>
-      <select
-        value={role}
-        onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
-        className="text-xs font-medium bg-transparent border-none focus:outline-none cursor-pointer text-foreground hover:text-primary transition-colors"
-      >
-        <option value="admin">Admin</option>
-        <option value="user">User</option>
-      </select>
-    </div>
-  );
-}
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -215,11 +196,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </Link>
               </div>
 
-              {/* Right Side: Dev Toggle + User Menu */}
+              {/* Right Side: User Menu */}
               <div className="flex items-center gap-3">
-                {/* Dev Mode Role Toggle */}
-                <RoleToggle />
-
                 {/* User Avatar Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

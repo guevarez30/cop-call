@@ -103,11 +103,6 @@ The application uses a hierarchical multi-tenant data model:
   - No access to organization-wide analytics
   - Cannot manage organization settings or other users
 
-### Development Mode
-
-- **Persona Toggle**: Header includes a toggle to switch between Admin and User views
-- **Purpose**: Testing different permission levels and UI variations during development
-
 ## Route Architecture
 
 ### Public Routes
