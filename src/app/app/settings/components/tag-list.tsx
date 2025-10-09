@@ -114,19 +114,9 @@ export function TagList() {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <TagIcon className="h-5 w-5" />
-                <CardTitle className="text-xl">Event Tags</CardTitle>
-              </div>
-              <button
-                type="button"
-                onClick={() => setHelpDrawerOpen(true)}
-                className="flex items-center gap-1.5 text-sm text-primary hover:underline w-fit"
-              >
-                <HelpCircle className="h-4 w-4" />
-                What is a tag?
-              </button>
+            <div className="flex items-center gap-2">
+              <TagIcon className="h-5 w-5" />
+              <CardTitle className="text-xl">Event Tags</CardTitle>
             </div>
             <Button
               size="default"
@@ -137,8 +127,16 @@ export function TagList() {
               Add Tag
             </Button>
           </div>
-          <CardDescription className="text-base">
-            Manage event tags available to officers when logging activities
+          <CardDescription className="text-base flex items-center gap-2 flex-wrap">
+            <span>Manage event tags available to officers when logging activities</span>
+            <button
+              type="button"
+              onClick={() => setHelpDrawerOpen(true)}
+              className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <HelpCircle className="h-4 w-4" />
+              What is a tag?
+            </button>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
