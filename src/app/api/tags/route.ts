@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { name, color } = body;
+    const { name, color, description } = body;
 
     // Validate input
     if (!name || typeof name !== 'string' || !name.trim()) {
@@ -34,6 +34,11 @@ export async function POST(request: NextRequest) {
     const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
     if (color && !hexColorRegex.test(color)) {
       return NextResponse.json({ error: 'Invalid color format. Use hex format (e.g., #FF0000)' }, { status: 400 });
+    }
+
+    // Validate description (optional string)
+    if (description !== undefined && typeof description !== 'string') {
+      return NextResponse.json({ error: 'Description must be a string' }, { status: 400 });
     }
 
     // Check if tag already exists for this organization
@@ -54,9 +59,10 @@ export async function POST(request: NextRequest) {
       .insert({
         name: name.trim(),
         color: color || '#3B82F6', // Default to blue if not provided
+        description: description?.trim() || null,
         organization_id: profile.organization_id,
       })
-      .select('id, name, color, created_at, updated_at')
+      .select('id, name, color, description, created_at, updated_at')
       .single();
 
     if (error) {

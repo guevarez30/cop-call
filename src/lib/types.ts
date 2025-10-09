@@ -20,6 +20,7 @@ export interface Tag {
   id: string;
   name: string;
   color: string; // Hex color code (e.g., #FF0000)
+  description?: string; // Optional description of what the tag represents
   created_at: string;
   updated_at: string;
   organization_id: string;

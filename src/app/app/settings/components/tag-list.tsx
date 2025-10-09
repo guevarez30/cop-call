@@ -9,12 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tag as TagIcon, Plus, MoreVertical, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { Tag as TagIcon, Plus, MoreVertical, Loader2, Pencil, Trash2, HelpCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { AddTagDialog } from './add-tag-dialog';
 import { EditTagDialog } from './edit-tag-dialog';
 import { DeleteTagDialog } from './delete-tag-dialog';
+import { TagHelpDrawer } from './tag-help-drawer';
 import { TagBadge } from '@/components/tag-badge';
 import { Tag } from '@/lib/types';
 
@@ -24,6 +25,7 @@ export function TagList() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
 
@@ -112,9 +114,19 @@ export function TagList() {
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <TagIcon className="h-5 w-5" />
-              <CardTitle className="text-xl">Event Tags</CardTitle>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <TagIcon className="h-5 w-5" />
+                <CardTitle className="text-xl">Event Tags</CardTitle>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHelpDrawerOpen(true)}
+                className="flex items-center gap-1.5 text-sm text-primary hover:underline w-fit"
+              >
+                <HelpCircle className="h-4 w-4" />
+                What is a tag?
+              </button>
             </div>
             <Button
               size="default"
@@ -145,10 +157,13 @@ export function TagList() {
               {tags.map((tag) => (
                 <div
                   key={tag.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex flex-col gap-2 min-w-0">
                     <TagBadge tag={tag} size="md" />
+                    {tag.description && (
+                      <p className="text-sm text-muted-foreground">{tag.description}</p>
+                    )}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -199,6 +214,8 @@ export function TagList() {
           isLoading={deletingTagId === selectedTag.id}
         />
       )}
+
+      <TagHelpDrawer open={helpDrawerOpen} onOpenChange={setHelpDrawerOpen} />
     </>
   );
 }

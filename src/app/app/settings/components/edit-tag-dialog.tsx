@@ -12,11 +12,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Check, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getContrastColor, parseTagName, lightenColor } from '@/components/tag-badge';
+import { Tag } from '@/lib/types';
+import { TagHelpDrawer } from './tag-help-drawer';
 
 interface EventTag {
   id: string;
@@ -36,19 +39,74 @@ interface EditTagDialogProps {
 export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTagDialogProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#3B82F6');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+  const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (tag) {
       setName(tag.name);
       setColor(tag.color || '#3B82F6');
+      setDescription(tag.description || '');
     } else {
       setName('');
       setColor('#3B82F6');
+      setDescription('');
     }
     setError(null);
   }, [tag]);
+
+  // Fetch existing tags when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchExistingTags();
+    }
+  }, [open]);
+
+  const fetchExistingTags = async () => {
+    setLoadingTags(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch('/api/tags/list', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setExistingTags(data.tags || []);
+      }
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    } finally {
+      setLoadingTags(false);
+    }
+  };
+
+  // Get unique colors with associated tag names
+  const getColorPalette = () => {
+    const colorMap = new Map<string, string[]>();
+
+    existingTags.forEach((tag) => {
+      const existing = colorMap.get(tag.color) || [];
+      colorMap.set(tag.color, [...existing, tag.name]);
+    });
+
+    return Array.from(colorMap.entries()).map(([color, tagNames]) => ({
+      color,
+      tagNames,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +133,11 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ name: name.trim(), color }),
+        body: JSON.stringify({
+          name: name.trim(),
+          color,
+          description: description.trim() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -112,6 +174,14 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
           <DialogDescription className="text-base">
             Update the tag name. This will affect how it appears for all users.
           </DialogDescription>
+          <button
+            type="button"
+            onClick={() => setHelpDrawerOpen(true)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:underline w-fit mt-1"
+          >
+            <HelpCircle className="h-4 w-4" />
+            What is a tag?
+          </button>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -128,7 +198,7 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
               <Input
                 id="tag-name"
                 type="text"
-                placeholder="e.g., traffic::accident"
+                placeholder="e.g., DUI"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -136,13 +206,49 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
                 className="h-11"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">
-                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags (e.g., traffic::accident, traffic::violation)
-              </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="tag-color">Color</Label>
+
+              {/* Color palette from existing tags */}
+              {!loadingTags && existingTags.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Click a color to match existing tags:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {getColorPalette().map(({ color: paletteColor, tagNames }) => (
+                      <button
+                        key={paletteColor}
+                        type="button"
+                        onClick={() => setColor(paletteColor)}
+                        disabled={loading}
+                        className="relative group"
+                        title={`Used by: ${tagNames.join(', ')}`}
+                      >
+                        <div
+                          className="h-10 w-10 rounded-md border-2 transition-all hover:scale-110"
+                          style={{
+                            backgroundColor: paletteColor,
+                            borderColor: color === paletteColor ? '#000' : 'transparent',
+                          }}
+                        >
+                          {color === paletteColor && (
+                            <div className="flex items-center justify-center h-full">
+                              <Check className="h-5 w-5" style={{ color: getContrastColor(paletteColor) }} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {tagNames.join(', ')}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3 items-center">
                 <Input
                   id="tag-color"
@@ -194,6 +300,21 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
                 </div>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tag-description">Description (Optional)</Label>
+              <Textarea
+                id="tag-description"
+                placeholder="Brief description of what this tag represents (e.g., Adult Arrest, Traffic Stop)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+                className="min-h-[80px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Help officers understand what this tag is used for
+              </p>
+            </div>
           </div>
 
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
@@ -213,6 +334,7 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
           </DialogFooter>
         </form>
       </DialogContent>
+      <TagHelpDrawer open={helpDrawerOpen} onOpenChange={setHelpDrawerOpen} />
     </Dialog>
   );
 }

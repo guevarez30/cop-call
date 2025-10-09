@@ -12,12 +12,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
-import { Loader2, AlertCircle, Check } from 'lucide-react';
+import { Loader2, AlertCircle, Check, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getContrastColor, parseTagName, lightenColor } from '@/components/tag-badge';
 import { Tag } from '@/lib/types';
+import { TagHelpDrawer } from './tag-help-drawer';
 
 interface AddTagDialogProps {
   open: boolean;
@@ -28,10 +30,12 @@ interface AddTagDialogProps {
 export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogProps) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#3B82F6'); // Default blue
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [existingTags, setExistingTags] = useState<Tag[]>([]);
   const [loadingTags, setLoadingTags] = useState(false);
+  const [helpDrawerOpen, setHelpDrawerOpen] = useState(false);
 
   // Fetch existing tags when dialog opens
   useEffect(() => {
@@ -105,7 +109,11 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ name: name.trim(), color }),
+        body: JSON.stringify({
+          name: name.trim(),
+          color,
+          description: description.trim() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -119,6 +127,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
       toast.success(`Tag "${name}" created successfully`);
       setName('');
       setColor('#3B82F6'); // Reset to default
+      setDescription('');
       setLoading(false);
       onOpenChange(false);
       onTagAdded();
@@ -133,6 +142,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
     if (!loading) {
       setName('');
       setColor('#3B82F6');
+      setDescription('');
       setError(null);
       onOpenChange(open);
     }
@@ -146,6 +156,14 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
           <DialogDescription className="text-base">
             Create a new event tag for your department. Use matching colors for related tags (e.g., all traffic tags in blue).
           </DialogDescription>
+          <button
+            type="button"
+            onClick={() => setHelpDrawerOpen(true)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:underline w-fit mt-1"
+          >
+            <HelpCircle className="h-4 w-4" />
+            What is a tag?
+          </button>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -162,7 +180,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
               <Input
                 id="tag-name"
                 type="text"
-                placeholder="e.g., traffic::accident"
+                placeholder="e.g., DUI"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -170,9 +188,6 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
                 className="h-11"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">
-                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags (e.g., traffic::accident, traffic::violation)
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -267,6 +282,21 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
                 </div>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tag-description">Description (Optional)</Label>
+              <Textarea
+                id="tag-description"
+                placeholder="Brief description of what this tag represents (e.g., Adult Arrest, Traffic Stop)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={loading}
+                className="min-h-[80px] resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Help officers understand what this tag is used for
+              </p>
+            </div>
           </div>
 
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
@@ -286,6 +316,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
           </DialogFooter>
         </form>
       </DialogContent>
+      <TagHelpDrawer open={helpDrawerOpen} onOpenChange={setHelpDrawerOpen} />
     </Dialog>
   );
 }
