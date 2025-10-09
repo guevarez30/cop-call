@@ -5,13 +5,13 @@ export function getEventsByStatus(events: Event[], status: 'draft' | 'submitted'
   return events.filter((event) => event.status === status);
 }
 
-// Helper function to get today's events
+// Helper function to get today's events (by created_at date)
 export function getTodaysEvents(events: Event[]): Event[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   return events.filter((event) => {
-    const eventDate = new Date(event.start_time);
+    const eventDate = new Date(event.created_at);
     eventDate.setHours(0, 0, 0, 0);
     return eventDate.getTime() === today.getTime();
   });

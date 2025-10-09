@@ -158,9 +158,14 @@ export async function GET(request: NextRequest) {
       .eq('organization_id', profile.organization_id)
       .order('start_time', { ascending: false });
 
-    // If user is not admin, filter to only their events
+    // Filter based on role:
+    // - Regular users: only their own events
+    // - Admins: their own drafts + all submitted events (not other officers' drafts)
     if (profile.role !== 'admin') {
       query = query.eq('officer_id', user.id);
+    } else {
+      // Admin: show own drafts OR all submitted events
+      query = query.or(`and(officer_id.eq.${user.id},status.eq.draft),status.eq.submitted`);
     }
 
     // Filter by status if provided

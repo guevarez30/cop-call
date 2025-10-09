@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { getContrastColor } from '@/components/tag-badge';
+import { getContrastColor, parseTagName, lightenColor } from '@/components/tag-badge';
 
 interface EventTag {
   id: string;
@@ -128,7 +128,7 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
               <Input
                 id="tag-name"
                 type="text"
-                placeholder="e.g., priority::high or Traffic Stop"
+                placeholder="e.g., traffic::accident"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -137,7 +137,7 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags
+                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags (e.g., traffic::accident, traffic::violation)
               </p>
             </div>
 
@@ -152,13 +152,45 @@ export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTag
                   disabled={loading}
                   className="h-11 w-20 cursor-pointer"
                 />
-                <div
-                  className="flex-1 h-11 rounded-md border px-3 py-2 flex items-center gap-2"
-                  style={{ backgroundColor: color }}
-                >
-                  <span className="text-sm font-medium" style={{ color: getContrastColor(color) }}>
-                    {name || 'Tag Preview'}
-                  </span>
+                <div className="flex-1 flex items-center">
+                  {(() => {
+                    const displayName = name || 'Tag Preview';
+                    const parsed = parseTagName(displayName);
+                    const textColor = getContrastColor(color);
+
+                    if (parsed.isGrouped) {
+                      // Two-tone display: lighter background for group, solid for label
+                      const lighterColor = lightenColor(color, 0.6);
+                      const lighterTextColor = getContrastColor(lighterColor);
+
+                      return (
+                        <div className="inline-flex rounded-md overflow-hidden font-medium border">
+                          <span
+                            className="text-sm px-2 py-1 border-r border-black/10"
+                            style={{ backgroundColor: lighterColor, color: lighterTextColor }}
+                          >
+                            {parsed.group}
+                          </span>
+                          <span
+                            className="text-sm px-2 py-1"
+                            style={{ backgroundColor: color, color: textColor }}
+                          >
+                            {parsed.label}
+                          </span>
+                        </div>
+                      );
+                    } else {
+                      // Solid color for single word
+                      return (
+                        <div
+                          className="inline-flex rounded-md font-medium text-sm px-2 py-1 border"
+                          style={{ backgroundColor: color, color: textColor }}
+                        >
+                          {parsed.label}
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
               </div>
             </div>

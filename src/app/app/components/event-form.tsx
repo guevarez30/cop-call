@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Event, Tag } from '@/lib/types';
-import { X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { TagBadge } from '@/components/tag-badge';
@@ -47,6 +48,11 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loadingTags, setLoadingTags] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<{
+    startTime?: string;
+    tags?: string;
+    notes?: string;
+  }>({});
 
   // Fetch tags from API
   useEffect(() => {
@@ -119,6 +125,9 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
   const addTag = (tag: Tag) => {
     setSelectedTags((prev) => [...prev, tag]);
     setTagSearch(''); // Clear search after adding
+    if (errors.tags) {
+      setErrors({ ...errors, tags: undefined });
+    }
   };
 
   const removeTag = (tagId: string) => {
@@ -135,7 +144,34 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const validateForm = (status: 'draft' | 'submitted'): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Only validate for submitted events (drafts can be incomplete)
+    if (status === 'submitted') {
+      if (!startTime) {
+        newErrors.startTime = 'Start time is required';
+      }
+
+      if (selectedTags.length === 0) {
+        newErrors.tags = 'At least one tag is required';
+      }
+
+      if (!notes.trim()) {
+        newErrors.notes = 'Notes are required';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async (status: 'draft' | 'submitted') => {
+    // Validate form
+    if (!validateForm(status)) {
+      return;
+    }
+
     setSaving(true);
     try {
       const eventData: EventFormData = {
@@ -182,9 +218,18 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
                 id="start-time"
                 type="datetime-local"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  if (errors.startTime) {
+                    setErrors({ ...errors, startTime: undefined });
+                  }
+                }}
+                variant={errors.startTime ? 'error' : 'default'}
                 className="h-10"
               />
+              {errors.startTime && (
+                <p className="text-sm font-medium text-destructive">{errors.startTime}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -204,7 +249,7 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
 
           {/* Tags Section */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Event Tags</Label>
+            <Label className="text-sm font-medium">Event Tags *</Label>
 
             {/* Selected Tags */}
             {selectedTags.length > 0 && (
@@ -240,7 +285,7 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
                 <div className="max-h-48 overflow-y-auto border rounded-md">
                   {loadingTags ? (
                     <div className="p-3 flex items-center justify-center">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <Spinner size="sm" variant="muted" />
                     </div>
                   ) : availableTags.length === 0 ? (
                     <div className="p-3 text-sm text-muted-foreground text-center">
@@ -273,20 +318,35 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
                 {selectedTags.length} tag{selectedTags.length !== 1 ? 's' : ''} selected
               </div>
             )}
+
+            {errors.tags && (
+              <p className="text-sm font-medium text-destructive">{errors.tags}</p>
+            )}
           </div>
 
           {/* Notes Section */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-sm font-medium">
-              Notes
+              Notes *
             </Label>
             <Textarea
               id="notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => {
+                setNotes(e.target.value);
+                if (errors.notes) {
+                  setErrors({ ...errors, notes: undefined });
+                }
+              }}
               placeholder="Describe what happened..."
-              className="min-h-[100px]"
+              className={cn(
+                "min-h-[100px]",
+                errors.notes && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive"
+              )}
             />
+            {errors.notes && (
+              <p className="text-sm font-medium text-destructive">{errors.notes}</p>
+            )}
           </div>
 
           {/* Involved Parties Section */}
@@ -361,11 +421,11 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             <Button
               onClick={() => handleSave('submitted')}
               className="flex-1 h-10"
-              disabled={selectedTags.length === 0 || !notes.trim() || saving}
+              disabled={saving}
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Saving...
                 </>
               ) : (
@@ -380,7 +440,7 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Saving...
                 </>
               ) : (

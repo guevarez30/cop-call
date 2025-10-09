@@ -8,7 +8,8 @@ import { EventCard } from './components/event-card';
 import { EventForm } from './components/event-form';
 import { EventDetailDialog } from './components/event-detail-dialog';
 import { DeleteEventDialog } from './components/delete-event-dialog';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import { useRole } from '@/lib/role-context';
 import { useUserProfile } from '@/lib/user-profile-context';
 import { Event } from '@/lib/types';
@@ -53,7 +54,7 @@ function AdminDashboard() {
     }
   };
 
-  // Admin sees ALL events from all officers
+  // API already filters: admin sees their own drafts + all submitted events
   const todaysEvents = getTodaysEvents(events);
   const drafts = getEventsByStatus(todaysEvents, 'draft');
   const submitted = getEventsByStatus(todaysEvents, 'submitted');
@@ -148,7 +149,7 @@ function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Spinner size="lg" variant="muted" />
       </div>
     );
   }
@@ -188,7 +189,7 @@ function AdminDashboard() {
           </div>
           <div className="space-y-3">
             {drafts.map((event) => (
-              <EventCard key={event.id} event={event} showOfficer={true} onClick={() => handleEditDraft(event)} />
+              <EventCard key={event.id} event={event} showOfficer={true} onClick={() => handleViewEvent(event)} />
             ))}
           </div>
         </div>
@@ -233,7 +234,10 @@ function AdminDashboard() {
         showOfficer={true}
         isAdmin={true}
         canEdit={true}
-        canDelete={true}
+        canDelete={
+          (viewingEvent?.officer_id === profile.id && viewingEvent?.status === 'draft') ||
+          viewingEvent?.status === 'submitted'
+        }
       />
 
       {/* Delete Confirmation Dialog */}
@@ -382,7 +386,7 @@ function UserDashboard({ userId }: { userId: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Spinner size="lg" variant="muted" />
       </div>
     );
   }
@@ -422,7 +426,7 @@ function UserDashboard({ userId }: { userId: string }) {
           </div>
           <div className="space-y-3">
             {drafts.map((event) => (
-              <EventCard key={event.id} event={event} onClick={() => handleEditDraft(event)} />
+              <EventCard key={event.id} event={event} onClick={() => handleViewEvent(event)} />
             ))}
           </div>
         </div>

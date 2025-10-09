@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { EventStatus } from '@/lib/types';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 
 interface DeleteEventDialogProps {
   open: boolean;
@@ -62,11 +62,15 @@ export function DeleteEventDialog({
                   <span className="font-semibold text-destructive">Warning: This action is permanent.</span>
                   <br />
                   <br />
-                  You are about to delete a submitted event. This will permanently remove all event data,
-                  including notes, tags, and timestamps. This action cannot be undone.
+                  You are about to delete a submitted event. This action cannot be undone.
                 </>
               ) : (
-                'This will permanently delete this draft event. This action cannot be undone.'
+                <>
+                  You are about to delete this event. This action cannot be undone.
+                  <br />
+                  <br />
+                  <span className="font-medium">If you want to keep this draft for later, click Cancel and leave it unsubmitted.</span>
+                </>
               )}
             </div>
             <div className="space-y-2">
@@ -96,7 +100,7 @@ export function DeleteEventDialog({
           >
             {deleting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Spinner size="sm" className="mr-2" />
                 Deleting...
               </>
             ) : (

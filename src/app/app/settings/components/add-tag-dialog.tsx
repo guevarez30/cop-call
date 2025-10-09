@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, AlertCircle, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { getContrastColor } from '@/components/tag-badge';
+import { getContrastColor, parseTagName, lightenColor } from '@/components/tag-badge';
 import { Tag } from '@/lib/types';
 
 interface AddTagDialogProps {
@@ -30,6 +30,57 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
   const [color, setColor] = useState('#3B82F6'); // Default blue
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existingTags, setExistingTags] = useState<Tag[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+
+  // Fetch existing tags when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchExistingTags();
+    }
+  }, [open]);
+
+  const fetchExistingTags = async () => {
+    setLoadingTags(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) return;
+
+      const response = await fetch('/api/tags/list', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setExistingTags(data.tags || []);
+      }
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    } finally {
+      setLoadingTags(false);
+    }
+  };
+
+  // Get unique colors with associated tag names
+  const getColorPalette = () => {
+    const colorMap = new Map<string, string[]>();
+
+    existingTags.forEach((tag) => {
+      const existing = colorMap.get(tag.color) || [];
+      colorMap.set(tag.color, [...existing, tag.name]);
+    });
+
+    return Array.from(colorMap.entries()).map(([color, tagNames]) => ({
+      color,
+      tagNames,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +144,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
         <DialogHeader>
           <DialogTitle className="text-xl">Add New Tag</DialogTitle>
           <DialogDescription className="text-base">
-            Create a new event tag for your department. Tags help officers categorize events.
+            Create a new event tag for your department. Use matching colors for related tags (e.g., all traffic tags in blue).
           </DialogDescription>
         </DialogHeader>
 
@@ -111,7 +162,7 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
               <Input
                 id="tag-name"
                 type="text"
-                placeholder="e.g., priority::high or Traffic Stop"
+                placeholder="e.g., traffic::accident"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -120,12 +171,51 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags (e.g., priority::low, status::active)
+                Tip: Use <code className="px-1 py-0.5 bg-muted rounded">group::label</code> format for organized tags (e.g., traffic::accident, traffic::violation)
               </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="tag-color">Color</Label>
+
+              {/* Color palette from existing tags */}
+              {!loadingTags && existingTags.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Click a color to match existing tags:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {getColorPalette().map(({ color: paletteColor, tagNames }) => (
+                      <button
+                        key={paletteColor}
+                        type="button"
+                        onClick={() => setColor(paletteColor)}
+                        disabled={loading}
+                        className="relative group"
+                        title={`Used by: ${tagNames.join(', ')}`}
+                      >
+                        <div
+                          className="h-10 w-10 rounded-md border-2 transition-all hover:scale-110"
+                          style={{
+                            backgroundColor: paletteColor,
+                            borderColor: color === paletteColor ? '#000' : 'transparent',
+                          }}
+                        >
+                          {color === paletteColor && (
+                            <div className="flex items-center justify-center h-full">
+                              <Check className="h-5 w-5" style={{ color: getContrastColor(paletteColor) }} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {tagNames.join(', ')}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3 items-center">
                 <Input
                   id="tag-color"
@@ -135,13 +225,45 @@ export function AddTagDialog({ open, onOpenChange, onTagAdded }: AddTagDialogPro
                   disabled={loading}
                   className="h-11 w-20 cursor-pointer"
                 />
-                <div
-                  className="flex-1 h-11 rounded-md border px-3 py-2 flex items-center gap-2"
-                  style={{ backgroundColor: color }}
-                >
-                  <span className="text-sm font-medium" style={{ color: getContrastColor(color) }}>
-                    {name || 'Tag Preview'}
-                  </span>
+                <div className="flex-1 flex items-center">
+                  {(() => {
+                    const displayName = name || 'Tag Preview';
+                    const parsed = parseTagName(displayName);
+                    const textColor = getContrastColor(color);
+
+                    if (parsed.isGrouped) {
+                      // Two-tone display: lighter background for group, solid for label
+                      const lighterColor = lightenColor(color, 0.6);
+                      const lighterTextColor = getContrastColor(lighterColor);
+
+                      return (
+                        <div className="inline-flex rounded-md overflow-hidden font-medium border">
+                          <span
+                            className="text-sm px-2 py-1 border-r border-black/10"
+                            style={{ backgroundColor: lighterColor, color: lighterTextColor }}
+                          >
+                            {parsed.group}
+                          </span>
+                          <span
+                            className="text-sm px-2 py-1"
+                            style={{ backgroundColor: color, color: textColor }}
+                          >
+                            {parsed.label}
+                          </span>
+                        </div>
+                      );
+                    } else {
+                      // Solid color for single word
+                      return (
+                        <div
+                          className="inline-flex rounded-md font-medium text-sm px-2 py-1 border"
+                          style={{ backgroundColor: color, color: textColor }}
+                        >
+                          {parsed.label}
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
               </div>
             </div>
