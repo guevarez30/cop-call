@@ -21,19 +21,11 @@ import { getContrastColor, parseTagName, lightenColor } from '@/components/tag-b
 import { Tag } from '@/lib/types';
 import { TagHelpDrawer } from './tag-help-drawer';
 
-interface EventTag {
-  id: string;
-  name: string;
-  color: string;
-  created_at: string;
-  updated_at: string;
-}
-
 interface EditTagDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTagUpdated: () => void;
-  tag: EventTag | null;
+  tag: Tag | null;
 }
 
 export function EditTagDialog({ open, onOpenChange, onTagUpdated, tag }: EditTagDialogProps) {
