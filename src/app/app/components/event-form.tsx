@@ -398,6 +398,7 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
               <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
                 {photos.map((photo, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={URL.createObjectURL(photo)}
                       alt={`Photo ${index + 1}`}

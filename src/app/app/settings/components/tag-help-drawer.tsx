@@ -121,7 +121,7 @@ export function TagHelpDrawer({ open, onOpenChange }: TagHelpDrawerProps) {
             <h3 className="text-lg font-semibold mb-3">Simple Tags</h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
               Simple tags use short codes or abbreviations that officers can quickly recognize and apply.
-              These work well for unique event types that don't need grouping.
+              These work well for unique event types that don&apos;t need grouping.
             </p>
             <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
               <p className="text-xs font-medium text-muted-foreground uppercase">Examples</p>
