@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { TagBadge } from '@/components/tag-badge';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
 
 interface EventFormData {
   start_time: string;
@@ -34,15 +35,11 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
   const [tagSearch, setTagSearch] = useState('');
   const [notes, setNotes] = useState(editEvent?.notes || '');
   const [involvedParties, setInvolvedParties] = useState(editEvent?.involved_parties || '');
-  const [startTime, setStartTime] = useState(
-    editEvent?.start_time
-      ? new Date(editEvent.start_time).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16)
+  const [startTime, setStartTime] = useState<Date | undefined>(
+    editEvent?.start_time ? new Date(editEvent.start_time) : new Date()
   );
-  const [endTime, setEndTime] = useState(
-    editEvent?.end_time
-      ? new Date(editEvent.end_time).toISOString().slice(0, 16)
-      : ''
+  const [endTime, setEndTime] = useState<Date | undefined>(
+    editEvent?.end_time ? new Date(editEvent.end_time) : undefined
   );
   const [photos, setPhotos] = useState<File[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -94,24 +91,16 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
       setSelectedTags(editEvent.tags || []);
       setNotes(editEvent.notes || '');
       setInvolvedParties(editEvent.involved_parties || '');
-      setStartTime(
-        editEvent.start_time
-          ? new Date(editEvent.start_time).toISOString().slice(0, 16)
-          : new Date().toISOString().slice(0, 16)
-      );
-      setEndTime(
-        editEvent.end_time
-          ? new Date(editEvent.end_time).toISOString().slice(0, 16)
-          : ''
-      );
+      setStartTime(editEvent.start_time ? new Date(editEvent.start_time) : new Date());
+      setEndTime(editEvent.end_time ? new Date(editEvent.end_time) : undefined);
       // Note: photos can't be pre-populated from URLs, would need special handling
     } else {
       // Reset form for new event
       setSelectedTags([]);
       setNotes('');
       setInvolvedParties('');
-      setStartTime(new Date().toISOString().slice(0, 16));
-      setEndTime('');
+      setStartTime(new Date());
+      setEndTime(undefined);
       setPhotos([]);
     }
     setTagSearch('');
@@ -175,8 +164,8 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
     setSaving(true);
     try {
       const eventData: EventFormData = {
-        start_time: new Date(startTime).toISOString(),
-        end_time: endTime ? new Date(endTime).toISOString() : null,
+        start_time: startTime ? startTime.toISOString() : new Date().toISOString(),
+        end_time: endTime ? endTime.toISOString() : null,
         tag_ids: selectedTags.map(t => t.id), // Convert Tag[] to tag IDs
         notes,
         involved_parties: involvedParties || null,
@@ -211,21 +200,20 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
           {/* Time Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-time" className="text-sm font-medium">
+              <Label className="text-sm font-medium">
                 Start Time *
               </Label>
-              <Input
-                id="start-time"
-                type="datetime-local"
-                value={startTime}
-                onChange={(e) => {
-                  setStartTime(e.target.value);
+              <DateTimePicker
+                date={startTime}
+                onDateTimeChange={(date) => {
+                  setStartTime(date);
                   if (errors.startTime) {
                     setErrors({ ...errors, startTime: undefined });
                   }
                 }}
-                variant={errors.startTime ? 'error' : 'default'}
-                className="h-10"
+                placeholder="Select start date and time"
+                required
+                className={errors.startTime ? 'border-destructive' : ''}
               />
               {errors.startTime && (
                 <p className="text-sm font-medium text-destructive">{errors.startTime}</p>
@@ -233,16 +221,13 @@ export function EventForm({ open, onCancel, onSave, editEvent }: EventFormProps)
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="end-time" className="text-sm font-medium">
+              <Label className="text-sm font-medium">
                 End Time <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
-              <Input
-                id="end-time"
-                type="datetime-local"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="h-10"
-                placeholder="Leave empty if still in progress"
+              <DateTimePicker
+                date={endTime}
+                onDateTimeChange={setEndTime}
+                placeholder="Select end date and time"
               />
             </div>
           </div>

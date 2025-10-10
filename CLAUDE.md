@@ -7,7 +7,7 @@ A mobile-responsive multi-tenant SaaS application template built with modern web
 ## Development Philosophy
 
 - **Incremental Development**: No home run, single-shot code development
-- **Mobile-First**: Mobile-responsive UI as primary focus
+- **Mobile-First**: Mobile-responsive UI as primary focus (see [MOBILE_STANDARDS.md](./MOBILE_STANDARDS.md))
 - **Component-Based**: Utilizing Tailwind CSS and shadcn/ui components
 - **Iterative Approach**: Build and test features step-by-step
 - **First-Time User Experience**: Always consider empty states and provide contextual guidance
@@ -53,7 +53,8 @@ A mobile-responsive multi-tenant SaaS application template built with modern web
 │   └── middleware.ts          # Route protection middleware
 ├── supabase/
 │   └── migrations/            # SQL migration files (run in order)
-└── CLAUDE.md                  # This file - project overview
+├── CLAUDE.md                  # This file - project overview
+└── MOBILE_STANDARDS.md        # Mobile responsive design standards
 ```
 
 ### Component Organization Strategy
@@ -249,7 +250,11 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Key Principles
 
-1. **Mobile-first responsive design**
+1. **Mobile-first responsive design** (see [MOBILE_STANDARDS.md](./MOBILE_STANDARDS.md) for complete standards)
+   - Pinch-to-zoom disabled via viewport configuration
+   - Minimum 44×44px touch targets for all interactive elements
+   - Touch-optimized interactions and form inputs
+   - Mobile-first Tailwind breakpoints (default → sm → md → lg)
 2. **Incremental feature development**
 3. **Auth protection by default for app routes**
 4. **Clean separation between public and protected areas**
@@ -257,11 +262,33 @@ SUPABASE_SERVICE_ROLE_KEY=
 6. **Type-safe database queries with Supabase**
 7. **Empty state guidance**: Always show helpful, contextual messages when data is empty to guide users on how to get started
 
+## Mobile Design Standards
+
+For comprehensive mobile responsive design guidelines, refer to **[MOBILE_STANDARDS.md](./MOBILE_STANDARDS.md)**, which includes:
+
+- Touch target requirements (44×44px minimum)
+- Responsive breakpoint strategy
+- Typography sizing standards
+- Layout patterns and component usage
+- Touch interaction utilities
+- Form input standards
+- Testing checklist
+
+**Key Standards:**
+- Viewport configured to disable pinch-to-zoom (`src/app/layout.js`)
+- Global mobile CSS optimizations in `src/app/globals.css`
+- All buttons must use `h-11` (44px) or larger on mobile
+- Use `Sheet` for mobile navigation, `Sidebar` for desktop
+- Test all pages at 320px, 375px, 768px, and 1280px+ widths
+
 ## Notes for Claude
 
 - Always confirm changes before implementing
 - Break down large features into smaller tasks
 - Test authentication flows thoroughly
-- Prioritize mobile responsiveness in all components
+- **Prioritize mobile responsiveness** in all components - follow [MOBILE_STANDARDS.md](./MOBILE_STANDARDS.md)
+  - Ensure all interactive elements meet 44×44px minimum touch target
+  - Use mobile-first Tailwind classes (default → sm: → md: → lg:)
+  - Test layouts at multiple breakpoints
 - Use shadcn/ui components as building blocks
 - Keep API routes secure by default

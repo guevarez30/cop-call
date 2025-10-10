@@ -23,10 +23,12 @@ import { Toaster } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 
 function NavigationItems(isAdmin: boolean) {
-  const items = [{ name: 'Dashboard', href: '/app', icon: Home }];
+  const items = [
+    { name: 'Dashboard', href: '/app', icon: Home },
+    { name: 'History', href: '/app/history', icon: History },
+  ];
 
   if (isAdmin) {
-    items.push({ name: 'History', href: '/app/history', icon: History });
     items.push({ name: 'Department Settings', href: '/app/settings', icon: Settings });
   }
 

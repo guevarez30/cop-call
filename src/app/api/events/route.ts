@@ -140,8 +140,23 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // 'draft' or 'submitted'
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100); // Max 100
+    const officerIdsParam = searchParams.get('officer_ids'); // Comma-separated officer IDs (admin-only filter)
+    const startDate = searchParams.get('start_date');
+    const endDate = searchParams.get('end_date');
+    const tagIdsParam = searchParams.get('tag_ids'); // Comma-separated tag IDs
 
-    // Build query based on role
+    // Validate pagination params
+    if (page < 1 || limit < 1) {
+      return NextResponse.json({ error: 'Invalid pagination parameters' }, { status: 400 });
+    }
+
+    // Parse officer IDs and tag IDs
+    const officerIds = officerIdsParam ? officerIdsParam.split(',').filter(Boolean) : [];
+    const tagIds = tagIdsParam ? tagIdsParam.split(',').filter(Boolean) : [];
+
+    // Build base query
     let query = supabase
       .from('events')
       .select(`
@@ -151,21 +166,26 @@ export async function GET(request: NextRequest) {
           tags (
             id,
             name,
-            color
+            color,
+            description
           )
         )
-      `)
-      .eq('organization_id', profile.organization_id)
-      .order('start_time', { ascending: false });
+      `, { count: 'exact' }) // Get total count for pagination
+      .eq('organization_id', profile.organization_id);
 
     // Filter based on role:
     // - Regular users: only their own events
-    // - Admins: their own drafts + all submitted events (not other officers' drafts)
+    // - Admins: if officer filter applied, filter by those officers; otherwise show own drafts + all submitted events
     if (profile.role !== 'admin') {
       query = query.eq('officer_id', user.id);
     } else {
-      // Admin: show own drafts OR all submitted events
-      query = query.or(`and(officer_id.eq.${user.id},status.eq.draft),status.eq.submitted`);
+      // Admin with officer filter: show all events for the specified officers
+      if (officerIds.length > 0) {
+        query = query.in('officer_id', officerIds);
+      } else {
+        // Admin without officer filter: show own drafts OR all submitted events (not other officers' drafts)
+        query = query.or(`and(officer_id.eq.${user.id},status.eq.draft),status.eq.submitted`);
+      }
     }
 
     // Filter by status if provided
@@ -173,7 +193,24 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', status);
     }
 
-    const { data: events, error } = await query;
+    // Filter by date range
+    if (startDate) {
+      query = query.gte('start_time', new Date(startDate).toISOString());
+    }
+    if (endDate) {
+      // Add 1 day and use less than to include the entire end date
+      const endDateTime = new Date(endDate);
+      endDateTime.setDate(endDateTime.getDate() + 1);
+      query = query.lt('start_time', endDateTime.toISOString());
+    }
+
+    // Apply ordering and pagination
+    const offset = (page - 1) * limit;
+    query = query
+      .order('start_time', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: events, error, count } = await query;
 
     if (error) {
       console.error('Error fetching events:', error);
@@ -181,15 +218,34 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform events to include tags as flat array
-    const transformedEvents = events?.map((event: any) => ({
+    let transformedEvents = events?.map((event: any) => ({
       ...event,
       tags: event.event_tags?.map((et: any) => et.tags).filter(Boolean) || [],
       event_tags: undefined, // Remove junction data
     })) || [];
 
+    // Filter by tags if provided (post-query filter for many-to-many)
+    if (tagIds.length > 0) {
+      transformedEvents = transformedEvents.filter((event: any) => {
+        const eventTagIds = event.tags.map((tag: any) => tag.id);
+        // Event must have at least one of the specified tags
+        return tagIds.some(tagId => eventTagIds.includes(tagId));
+      });
+    }
+
+    // Calculate pagination metadata
+    const total = count || 0;
+    const totalPages = Math.ceil(total / limit);
+
     return NextResponse.json({
       success: true,
       events: transformedEvents,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
     });
   } catch (error: any) {
     console.error('Get events error:', error);
