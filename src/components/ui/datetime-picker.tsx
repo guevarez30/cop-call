@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MobileDateTimeInput } from "@/components/ui/mobile-datetime-input"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 
 interface DateTimePickerProps {
   date?: Date
@@ -32,19 +34,34 @@ export function DateTimePicker({
   className,
   required = false,
 }: DateTimePickerProps) {
+  const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = React.useState(false)
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date)
   const [timeValue, setTimeValue] = React.useState<string>(
     date ? format(date, "HH:mm") : "12:00"
   )
 
-  // Update internal state when prop changes
+  // Update internal state when prop changes (only used for desktop)
   React.useEffect(() => {
     if (date) {
       setSelectedDate(date)
       setTimeValue(format(date, "HH:mm"))
     }
   }, [date])
+
+  // On mobile, use native datetime inputs for better UX
+  if (isMobile) {
+    return (
+      <MobileDateTimeInput
+        date={date}
+        onDateTimeChange={onDateTimeChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={className}
+        required={required}
+      />
+    )
+  }
 
   const handleDateSelect = (newDate: Date | undefined) => {
     if (!newDate) {

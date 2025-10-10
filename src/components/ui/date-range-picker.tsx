@@ -13,6 +13,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { MobileDateRangeInput } from "@/components/ui/mobile-date-range-input"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 
 interface DateRangePickerProps {
   dateRange?: DateRange
@@ -81,6 +83,13 @@ export function DateRangePicker({
   showPresets = true,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false)
+  const isMobile = useIsMobile()
+  const [selectedRange, setSelectedRange] = React.useState<DateRange | undefined>(dateRange)
+
+  // Update internal state when prop changes
+  React.useEffect(() => {
+    setSelectedRange(dateRange)
+  }, [dateRange])
 
   const formatDateRange = (range?: DateRange) => {
     if (!range?.from) return placeholder
@@ -90,18 +99,39 @@ export function DateRangePicker({
 
   const handlePresetClick = (preset: typeof presets[0]) => {
     const range = preset.getValue()
+    setSelectedRange(range)
     onDateRangeChange?.(range)
     setIsOpen(false)
   }
 
   const handleCalendarSelect = (range: DateRange | undefined) => {
-    onDateRangeChange?.(range)
-    // Only close if both dates are selected
-    if (range?.from && range?.to) {
-      setIsOpen(false)
-    }
+    setSelectedRange(range)
   }
 
+  const handleApply = () => {
+    onDateRangeChange?.(selectedRange)
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setSelectedRange(dateRange)
+    setIsOpen(false)
+  }
+
+  // On mobile, use native date inputs for better UX
+  if (isMobile) {
+    return (
+      <MobileDateRangeInput
+        dateRange={dateRange}
+        onDateRangeChange={onDateRangeChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={className}
+      />
+    )
+  }
+
+  // On desktop, use calendar popover with presets
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -143,13 +173,29 @@ export function DateRangePicker({
           <div className="p-3">
             <Calendar
               mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
+              defaultMonth={selectedRange?.from}
+              selected={selectedRange}
               onSelect={handleCalendarSelect}
               numberOfMonths={2}
               initialFocus
             />
           </div>
+        </div>
+        {/* Apply/Cancel buttons */}
+        <div className="border-t p-3 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleApply}
+          >
+            Apply
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

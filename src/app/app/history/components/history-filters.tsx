@@ -294,7 +294,6 @@ export function HistoryFilters({ isAdmin, onFilterChange, onClearFilters }: Hist
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
                 placeholder="Select date range"
-                className="h-9"
                 showPresets={true}
               />
             </div>

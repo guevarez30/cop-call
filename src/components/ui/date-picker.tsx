@@ -12,6 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { MobileDateInput } from "@/components/ui/mobile-date-input"
+import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 
 interface DatePickerProps {
   date?: Date
@@ -28,8 +30,45 @@ export function DatePicker({
   disabled = false,
   className,
 }: DatePickerProps) {
+  const isMobile = useIsMobile()
+  const [isOpen, setIsOpen] = React.useState(false)
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date)
+
+  // Update internal state when prop changes
+  React.useEffect(() => {
+    setSelectedDate(date)
+  }, [date])
+
+  // On mobile, use native date input for better UX
+  if (isMobile) {
+    return (
+      <MobileDateInput
+        date={date}
+        onDateChange={onDateChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={className}
+      />
+    )
+  }
+
+  const handleDateSelect = (newDate: Date | undefined) => {
+    setSelectedDate(newDate)
+  }
+
+  const handleApply = () => {
+    onDateChange?.(selectedDate)
+    setIsOpen(false)
+  }
+
+  const handleCancel = () => {
+    setSelectedDate(date)
+    setIsOpen(false)
+  }
+
+  // On desktop, use calendar popover
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -45,12 +84,30 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={onDateChange}
-          initialFocus
-        />
+        <div className="flex flex-col">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            initialFocus
+          />
+          {/* Apply/Cancel buttons */}
+          <div className="border-t p-3 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApply}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   )
