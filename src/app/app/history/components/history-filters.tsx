@@ -251,7 +251,7 @@ export function HistoryFilters({ isAdmin, onFilterChange, onClearFilters }: Hist
                     value={officerSearch}
                     onChange={(e) => setOfficerSearch(e.target.value)}
                     onFocus={() => setShowOfficerDropdown(true)}
-                    className="h-9"
+                    className="h-11"
                     disabled={loadingOfficers}
                   />
                   {/* Officer Dropdown */}
@@ -311,7 +311,7 @@ export function HistoryFilters({ isAdmin, onFilterChange, onClearFilters }: Hist
                   value={tagSearch}
                   onChange={(e) => setTagSearch(e.target.value)}
                   onFocus={() => setShowTagDropdown(true)}
-                  className="h-9"
+                  className="h-11"
                   disabled={loadingTags}
                 />
                 {/* Tag Dropdown */}
@@ -391,7 +391,7 @@ export function HistoryFilters({ isAdmin, onFilterChange, onClearFilters }: Hist
             <Button
               onClick={handleApplyFilters}
               size="sm"
-              className="h-9"
+              className="h-11"
             >
               Apply Filters
             </Button>

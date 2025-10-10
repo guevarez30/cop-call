@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { CalendarIcon, Clock } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -12,8 +12,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { MobileDateTimeInput } from "@/components/ui/mobile-datetime-input"
 import { useIsMobile } from "@/lib/hooks/use-is-mobile"
 
@@ -66,7 +64,6 @@ export function DateTimePicker({
   const handleDateSelect = (newDate: Date | undefined) => {
     if (!newDate) {
       setSelectedDate(undefined)
-      onDateTimeChange?.(undefined)
       return
     }
 
@@ -77,22 +74,6 @@ export function DateTimePicker({
     combinedDateTime.setMinutes(minutes)
 
     setSelectedDate(combinedDateTime)
-    onDateTimeChange?.(combinedDateTime)
-  }
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value
-    setTimeValue(newTime)
-
-    if (selectedDate) {
-      const [hours, minutes] = newTime.split(":").map(Number)
-      const newDateTime = new Date(selectedDate)
-      newDateTime.setHours(hours)
-      newDateTime.setMinutes(minutes)
-
-      setSelectedDate(newDateTime)
-      onDateTimeChange?.(newDateTime)
-    }
   }
 
   const handleApply = () => {
@@ -138,20 +119,76 @@ export function DateTimePicker({
             initialFocus
           />
           {/* Time picker */}
-          <div className="border-t p-3 space-y-2">
-            <Label htmlFor="time-picker" className="text-sm font-medium">
-              Time
-            </Label>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <Input
-                id="time-picker"
-                type="time"
-                value={timeValue}
-                onChange={handleTimeChange}
-                className="h-9"
-                required={required}
-              />
+          <div className="border-t p-4">
+            <div className="text-xs font-medium text-muted-foreground mb-3">
+              Select Time
+            </div>
+            <div className="flex items-start justify-center gap-2">
+              {/* Hours */}
+              <div className="flex flex-col items-center">
+                <div className="text-xs font-medium text-muted-foreground mb-2">
+                  Hour
+                </div>
+                <div className="h-[160px] w-16 overflow-y-auto border rounded-md flex flex-col">
+                  {Array.from({ length: 24 }, (_, i) => i).map((hour) => {
+                    const [currentHour] = timeValue.split(":").map(Number)
+                    return (
+                      <button
+                        key={hour}
+                        type="button"
+                        onClick={() => {
+                          const [, minutes] = timeValue.split(":")
+                          setTimeValue(`${hour.toString().padStart(2, "0")}:${minutes}`)
+                        }}
+                        className={cn(
+                          "w-full py-2 text-sm hover:bg-accent transition-colors flex-shrink-0",
+                          hour === currentHour && "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                      >
+                        {hour.toString().padStart(2, "0")}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="text-2xl font-semibold text-muted-foreground mt-8">
+                :
+              </div>
+
+              {/* Minutes */}
+              <div className="flex flex-col items-center">
+                <div className="text-xs font-medium text-muted-foreground mb-2">
+                  Minute
+                </div>
+                <div className="h-[160px] w-16 overflow-y-auto border rounded-md flex flex-col">
+                  {Array.from({ length: 60 }, (_, i) => i).map((minute) => {
+                    const [, currentMinute] = timeValue.split(":").map(Number)
+                    return (
+                      <button
+                        key={minute}
+                        type="button"
+                        onClick={() => {
+                          const [hours] = timeValue.split(":")
+                          setTimeValue(`${hours}:${minute.toString().padStart(2, "0")}`)
+                        }}
+                        className={cn(
+                          "w-full py-2 text-sm hover:bg-accent transition-colors flex-shrink-0",
+                          minute === currentMinute && "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                      >
+                        {minute.toString().padStart(2, "0")}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Selected time display */}
+            <div className="mt-3 text-center text-sm text-muted-foreground">
+              {timeValue && format(new Date(`2000-01-01T${timeValue}`), "p")}
             </div>
           </div>
           {/* Apply button */}
