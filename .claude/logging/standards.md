@@ -1,10 +1,3 @@
----
-name: logging-standards
-description: Reference documentation for logging standards and implementation decisions for this Next.js application. Use this agent when implementing new features that require logging, reviewing log statements, or making decisions about what and how to log.
-model: sonnet
-color: blue
----
-
 # Logging Standards & Implementation Guide
 
 ## Technology Decision: Pino Logger
